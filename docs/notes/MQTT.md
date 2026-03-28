@@ -2,6 +2,7 @@
 ## What is MQTT ?
 ** MQTT (Message Queuing Telementry Transport)** is lightweight communication protocol used in Iot systems.
 [MQTT](https://mqtt.org/software/)
+
 It follws a **publish/subscribe model**:
 - A device **publishes ** data to a topic
 - Other components **subscribe** to that topic to receive data 
@@ -33,14 +34,14 @@ We must allow access from other devices (ESP32)
 
 Edit configuration file:
 
-![command](/home/hamza/Documents/github/cooperative-iot-monitor/docs/screenshots/localconfiglocation.png)
+![command](cooperative-iot-monitor/docs/screenshots/localconfiglocation.png)
 
 Add:
 listener 1883 0.0.0.0
 allow_anonymous true
 persistence true
 
-![file content](/home/hamza/Documents/github/cooperative-iot-monitor/docs/screenshots/locolconfigfile.png)
+![file content](cooperative-iot-monitor/docs/screenshots/locolconfigfile.png)
 
 ## Explanation
 listener 1883 0.0.0.0 ,this allows connections from the network
