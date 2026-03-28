@@ -34,14 +34,14 @@ We must allow access from other devices (ESP32)
 
 Edit configuration file:
 
-![command](cooperative-iot-monitor/docs/screenshots/localconfiglocation.png)
+![Local Config File](../screenshots/localconfigfile.png)
 
 Add:
 listener 1883 0.0.0.0
 allow_anonymous true
 persistence true
 
-![file content](cooperative-iot-monitor/docs/screenshots/locolconfigfile.png)
+![Config Location](../screenshots/localconfiglocation.png)
 
 ## Explanation
 listener 1883 0.0.0.0 ,this allows connections from the network
