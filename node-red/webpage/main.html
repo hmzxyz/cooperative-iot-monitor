@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ESP32 MQTT Demo</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+    h1 { color: #333; }
+    #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; background: #fff; }
+    .msg { margin: 5px 0; padding: 5px; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <h1>ESP32 MQTT Messages</h1>
+  <div id="messages"></div>
+
+  <script>
+    // WebSocket URL for Mosquitto
+    const brokerUrl = 'ws://192.168.100.72:9001'; 
+    const topic = 'test/topic';
+
+    const client = mqtt.connect(brokerUrl);
+
+    client.on('connect', () => {
+      console.log('Connected to broker via WS');
+      client.subscribe(topic);
+    });
+
+    client.on('message', (topic, message) => {
+      const msgDiv = document.getElementById('messages');
+      const msgEl = document.createElement('div');
+      msgEl.className = 'msg';
+      msgEl.textContent = `[${new Date().toLocaleTimeString()}] ${message.toString()}`;
+      msgDiv.appendChild(msgEl);
+      msgDiv.scrollTop = msgDiv.scrollHeight; // auto-scroll
+    });
+
+    client.on('error', (err) => {
+      console.error('MQTT Error:', err);
+    });
+  </script>
+</body>
+</html>

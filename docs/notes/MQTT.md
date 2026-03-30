@@ -21,9 +21,7 @@ It acts as a **middleman**:
 ### Why is it needed?
 In this project:
 - ESP32 publishes sensor data  
-- Mosquitto routes the data  
-- FastAPI processes and stores it  
-- Node-RED displays it in real time  
+- Mosquitto routes the data   
 
 Without Mosquitto, components cannot communicate
 
@@ -34,14 +32,9 @@ We must allow access from other devices (ESP32)
 
 Edit configuration file:
 
-![Local Config File](../screenshots/localconfigfile.png)
+![Local Config File](../screenshots/conffile.png)
 
-Add:
-listener 1883 0.0.0.0
-allow_anonymous true
-persistence true
-
-![Config Location](../screenshots/localconfiglocation.png)
+![Config Location](../screenshots/conffile2.png)
 
 ## Explanation
 listener 1883 0.0.0.0 ,this allows connections from the network
