@@ -1,0 +1,36 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+
+# Arduino / ESP32 build artifacts
+*.bin
+*.hex
+*.elf
+*.eep
+*.map
+*.zip
+/build-*
+
+# VS Code
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node / frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local project guide
+guide.md
+
+# Local environment files
+.env
+frontend/.env
+backend/.env
