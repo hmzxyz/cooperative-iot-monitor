@@ -1,0 +1,216 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0b1120;
+  color: #e2e8f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, rgba(59, 130, 246, 0.15), transparent 30%),
+    linear-gradient(180deg, #0b1120 0%, #020617 100%);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.hero-panel {
+  display: grid;
+  gap: 20px;
+  padding: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.92);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #60a5fa;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+}
+
+.hero-panel h1 {
+  margin: 0;
+  font-size: clamp(2rem, 2.5vw, 3rem);
+  line-height: 1.05;
+}
+
+.hero-panel__intro {
+  margin: 10px 0 0;
+  max-width: 760px;
+  line-height: 1.8;
+  color: #cbd5e1;
+}
+
+.hero-panel__status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border-radius: 9999px;
+  background: rgba(30, 58, 138, 0.2);
+  color: #bfdbfe;
+  font-weight: 600;
+}
+
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+  padding: 0.95rem 1.2rem;
+  border: none;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.primary-button:hover {
+  transform: translateY(-1px);
+}
+
+.control-panel {
+  margin: 26px 0;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1.8fr 1fr;
+}
+
+.control-panel__item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.control-panel__item label {
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+.control-panel__item input {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.95);
+  color: #e2e8f0;
+}
+
+.broker-input-row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.secondary-button {
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(100, 116, 139, 0.18);
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.secondary-button:hover {
+  background: rgba(148, 163, 184, 0.15);
+}
+
+.control-panel__meta {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.grid-panel {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sensor-card {
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+}
+
+.sensor-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.sensor-card__unit {
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.sensor-card__value {
+  font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-weight: 800;
+  color: #eff6ff;
+}
+
+.sensor-card__description {
+  margin-top: 10px;
+  color: #94a3b8;
+}
+
+.footer-note {
+  margin-top: 30px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  color: #cbd5e1;
+}
+
+@media (max-width: 840px) {
+  .grid-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .control-panel {
+    grid-template-columns: 1fr;
+  }
+}
