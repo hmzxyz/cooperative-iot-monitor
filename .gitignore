@@ -1,4 +1,24 @@
-# General
+# Node.js / React
+node_modules/
+/.pnp
+.pnp.js
+
+# Build output
+frontend/dist/
+/build
+
+# Vite / TS
+/.vite
+/*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+
+# OS & Editor
+.DS_Store
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
 *.log
