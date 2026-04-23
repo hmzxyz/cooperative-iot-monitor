@@ -1,0 +1,12 @@
+[
+  {
+    "deviceId": "esp32-barn-01",
+    "location": "Barn A – Station 1",
+    "publishIntervalMs": 2000
+  },
+  {
+    "deviceId": "esp32-barn-02",
+    "location": "Barn B – Station 2",
+    "publishIntervalMs": 2500
+  }
+]

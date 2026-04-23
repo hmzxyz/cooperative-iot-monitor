@@ -1,5 +1,5 @@
 import mqtt from 'mqtt';
-import { MQTT_TOPICS, MOCK_INTERVAL_MS, MQTT_STALE_TIMEOUT_MS } from './config.js';
+import { DEVICE_TOPIC_WILDCARD, MOCK_INTERVAL_MS, MQTT_STALE_TIMEOUT_MS, parseSensorTopic } from './config.js';
 
 const randomBetween = (min, max) => Number((Math.random() * (max - min) + min).toFixed(1));
 
@@ -71,23 +71,20 @@ export default class MqttManager {
   }
 
   subscribeTopics() {
-    Object.values(MQTT_TOPICS).forEach((topic) => {
-      if (this.client) {
-        this.client.subscribe(topic, { qos: 0 }, (err) => {
-          if (err) {
-            console.warn(`Subscribe failed for topic ${topic}:`, err);
-          }
-        });
-      }
-    });
+    if (this.client) {
+      this.client.subscribe(DEVICE_TOPIC_WILDCARD, { qos: 0 }, (err) => {
+        if (err) console.warn('Subscribe failed:', err);
+      });
+    }
   }
 
   handleMessage(topic, payload) {
-    const sensorKey = Object.keys(MQTT_TOPICS).find((key) => MQTT_TOPICS[key] === topic);
+    const parsed = parseSensorTopic(topic);
     const value = parseFloat(payload);
-    if (!sensorKey || Number.isNaN(value)) {
+    if (!parsed || Number.isNaN(value)) {
       return;
     }
+    const { sensorKey } = parsed;
 
     this.lastMessageAt = Date.now();
     this.mockActive = false;

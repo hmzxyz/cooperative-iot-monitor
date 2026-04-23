@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import MqttManager from './MqttManager.js';
 import SensorCard from './components/SensorCard.jsx';
+import HistoryChart from './components/HistoryChart.jsx';
 import { DEFAULT_BROKER_URL, MQTT_TOPICS, SENSOR_CONFIGS } from './config.js';
+import { useAuth } from './AuthContext.jsx';
+import LoginPage from './pages/LoginPage.jsx';
 
 const buildInitialSensors = () => ({
   temperature: { value: 24.0, unit: '°C' },
@@ -10,7 +13,8 @@ const buildInitialSensors = () => ({
   flow: { value: 12, unit: 'L/min' },
 });
 
-function App() {
+function Dashboard() {
+  const { logout } = useAuth();
   const [sensorData, setSensorData] = useState(buildInitialSensors());
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   const [mockMode, setMockMode] = useState(true);
@@ -96,6 +100,9 @@ function App() {
           <button className="primary-button" type="button" onClick={toggleMode}>
             {mockMode ? 'Switch to Live MQTT Mode' : 'Switch to Mock Mode'}
           </button>
+          <button className="secondary-button" type="button" onClick={logout}>
+            Sign Out
+          </button>
         </div>
       </header>
 
@@ -129,6 +136,15 @@ function App() {
         ))}
       </main>
 
+      <section className="charts-panel">
+        <h2 className="charts-panel__heading">History (last 40 readings)</h2>
+        <div className="charts-grid">
+          {Object.entries(SENSOR_CONFIGS).map(([key, { label, unit }]) => (
+            <HistoryChart key={key} sensorId={key} label={label} unit={unit} />
+          ))}
+        </div>
+      </section>
+
       <footer className="footer-note">
         <p>
           The app automatically generates placeholder values when MQTT is unavailable. Real values will override placeholder readings when messages are received on configured topics.
@@ -136,6 +152,11 @@ function App() {
       </footer>
     </div>
   );
+}
+
+function App() {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Dashboard /> : <LoginPage />;
 }
 
 export default App;
