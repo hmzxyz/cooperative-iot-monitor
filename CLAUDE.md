@@ -24,12 +24,13 @@ npm run preview    # preview production build
 
 ```bash
 cd backend
-python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uv sync                                                        # install / sync dependencies
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 # SQLite DB is auto-created as backend/sensors.db on first run
-pytest                 # run tests (not yet configured)
+uv run pytest          # run tests (not yet configured)
 ```
+
+Dependencies are declared in `backend/pyproject.toml`. To add a package: `uv add <package>`.
 
 ### ESP32 Simulator (replaces physical hardware during dev)
 
