@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -5,12 +6,24 @@ from app.database import init_db, SessionLocal
 from app.mqtt_subscriber import start_subscriber
 from app.routers import auth, sensors
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    start_subscriber(SessionLocal)
-    yield
+    app.state.mqtt_client = None
+    try:
+        app.state.mqtt_client = start_subscriber(SessionLocal)
+    except Exception:
+        logger.exception("Failed to start MQTT subscriber; API will continue without MQTT ingestion.")
+    try:
+        yield
+    finally:
+        mqtt_client = getattr(app.state, "mqtt_client", None)
+        if mqtt_client:
+            mqtt_client.loop_stop()
+            mqtt_client.disconnect()
 
 
 app = FastAPI(title="Cooperative IoT Monitor API", lifespan=lifespan)

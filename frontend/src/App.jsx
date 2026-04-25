@@ -14,7 +14,7 @@ const buildInitialSensors = () => ({
 });
 
 function Dashboard() {
-  const { logout } = useAuth();
+  const { logout, username } = useAuth();
   const [sensorData, setSensorData] = useState(buildInitialSensors());
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   const [mockMode, setMockMode] = useState(true);
@@ -96,7 +96,10 @@ function Dashboard() {
           </p>
         </div>
         <div className="hero-panel__status-row">
-          <div className="status-badge">{statusLabel}</div>
+          <div className="hero-panel__status-group">
+            <div className="status-badge">{statusLabel}</div>
+            <p className="user-badge">User: {username || 'unknown'}</p>
+          </div>
           <button className="primary-button" type="button" onClick={toggleMode}>
             {mockMode ? 'Switch to Live MQTT Mode' : 'Switch to Mock Mode'}
           </button>

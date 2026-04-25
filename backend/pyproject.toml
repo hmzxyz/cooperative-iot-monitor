@@ -3,13 +3,14 @@ name = "cooperative-iot-monitor-backend"
 version = "0.1.0"
 description = "FastAPI backend for the Cooperative IoT Monitor"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.111.0",
     "uvicorn[standard]>=0.29.0",
     "sqlalchemy>=2.0.36",
     "paho-mqtt>=2.1.0",
     "python-dotenv>=1.0.1",
+    "python-multipart>=0.0.9",
     "passlib[bcrypt]>=1.7.4",
     "python-jose[cryptography]>=3.3.0",
 ]

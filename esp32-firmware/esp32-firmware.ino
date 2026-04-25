@@ -6,7 +6,11 @@ const char* ssid = "YOUR_WIFI_SSID";
 const char* password = "YOUR_WIFI_PASSWORD";
 const char* mqtt_server = "192.168.100.72";
 const int mqtt_port = 1883;
-const char* mqtt_topic = "esp32/sensors";
+const char* device_id = "esp32-firmware-01";
+char topic_temperature[96];
+char topic_humidity[96];
+char topic_weight[96];
+char topic_flow[96];
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -33,8 +37,6 @@ void reconnectMQTT() {
 
     if (client.connect("ESP32_Sensor_Client")) {
       Serial.println("connected");
-      // Subscribe to the same topic if we ever want to receive messages.
-      client.subscribe(mqtt_topic);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -43,17 +45,17 @@ void reconnectMQTT() {
   }
 }
 
-// Build a JSON payload string from the simulated sensor values.
-String buildJsonPayload(float temperature, float pressure, float milkWeight, const char* alert, unsigned long timestamp) {
-  char buffer[256];
-  snprintf(buffer, sizeof(buffer),
-           "{\"temperature\":%.1f,\"pressure\":%.2f,\"milk_weight\":%.1f,\"alert\":\"%s\",\"timestamp\":%lu}",
-           temperature,
-           pressure,
-           milkWeight,
-           alert,
-           timestamp);
-  return String(buffer);
+void setupTopics() {
+  snprintf(topic_temperature, sizeof(topic_temperature), "cooperative/device/%s/sensor/temperature", device_id);
+  snprintf(topic_humidity, sizeof(topic_humidity), "cooperative/device/%s/sensor/humidity", device_id);
+  snprintf(topic_weight, sizeof(topic_weight), "cooperative/device/%s/sensor/weight", device_id);
+  snprintf(topic_flow, sizeof(topic_flow), "cooperative/device/%s/sensor/flow", device_id);
+}
+
+void publishSensor(const char* topic, float value) {
+  char payload[16];
+  dtostrf(value, 0, 2, payload);
+  client.publish(topic, payload);
 }
 
 void setup() {
@@ -61,6 +63,7 @@ void setup() {
   Serial.begin(115200);
   connectWiFi();
   client.setServer(mqtt_server, mqtt_port);
+  setupTopics();
 }
 
 void loop() {
@@ -71,26 +74,33 @@ void loop() {
 
   client.loop();
 
-  // Generate simulated sensor values.
-  float temperature = 18.0 + random(0, 260) / 10.0;  // 18.0 - 44.0°C
-  float pressure = 1.0 + random(0, 450) / 100.0;     // 1.00 - 5.50 bar
-  float milkWeight = 10.0 + random(0, 420) / 10.0;   // 10.0 - 52.0 kg
+  // Generate simulated sensor values that match backend/frontend sensor keys.
+  float temperature = 18.0 + random(0, 170) / 10.0;  // 18.0 - 35.0 °C
+  float humidity = 40.0 + random(0, 500) / 10.0;     // 40.0 - 90.0 %
+  float weight = 0.0 + random(0, 500) / 10.0;        // 0.0 - 50.0 kg
+  float flow = 0.0 + random(0, 100) / 10.0;          // 0.0 - 10.0 L/min
   unsigned long timestamp = millis();
 
   // Decide if the current reading should create an alert.
   const char* alert = "nominal";
-  if (temperature > 45.0 || pressure > 4.0 || milkWeight > 45.0) {
+  if (temperature > 33.0 || humidity > 87.0 || weight > 48.0 || flow > 9.0) {
     alert = "critical";
-  } else if (temperature > 40.0 || pressure > 3.5 || milkWeight > 40.0) {
+  } else if (temperature > 30.0 || humidity > 80.0 || weight > 44.0 || flow > 7.0) {
     alert = "warning";
   }
 
-  String payload = buildJsonPayload(temperature, pressure, milkWeight, alert, timestamp);
-
-  // Publish the simulated sensor reading to the MQTT broker.
-  client.publish(mqtt_topic, payload.c_str());
-  Serial.print("Published MQTT payload: ");
-  Serial.println(payload);
+  // Publish each sensor to the topic contract used by backend/frontend.
+  publishSensor(topic_temperature, temperature);
+  publishSensor(topic_humidity, humidity);
+  publishSensor(topic_weight, weight);
+  publishSensor(topic_flow, flow);
+  Serial.printf("Published sensors: temp=%.2fC humidity=%.2f%% weight=%.2fkg flow=%.2fL/min alert=%s ts=%lu\n",
+                temperature,
+                humidity,
+                weight,
+                flow,
+                alert,
+                timestamp);
 
   // Wait a few seconds before sending the next simulated reading.
   delay(5000);

@@ -1,10 +1,11 @@
 import os
-import threading
+import logging
 import paho.mqtt.client as mqtt
 from datetime import datetime, timezone
 
 BROKER_HOST = os.getenv("MQTT_BROKER_HOST", "localhost")
 BROKER_PORT = int(os.getenv("MQTT_BROKER_PORT", "1883"))
+logger = logging.getLogger(__name__)
 
 # cooperative/device/{device_id}/sensor/{sensor_id}
 TOPIC_PATTERN = "cooperative/device/+/sensor/+"
@@ -21,8 +22,15 @@ def _parse_topic(topic: str):
 
 def start_subscriber(session_factory):
     def on_connect(client, userdata, flags, reason_code, properties):
+        if reason_code != 0:
+            logger.warning("[mqtt] connect failed: reason_code=%s", reason_code)
+            return
         client.subscribe(TOPIC_PATTERN)
-        print(f"[mqtt] subscribed to {TOPIC_PATTERN!r}")
+        logger.info("[mqtt] subscribed to %r", TOPIC_PATTERN)
+
+    def on_disconnect(client, userdata, disconnect_flags, reason_code, properties):
+        if reason_code != 0:
+            logger.warning("[mqtt] disconnected unexpectedly: reason_code=%s", reason_code)
 
     def on_message(client, userdata, msg):
         from app.models.sensor_reading import SensorReading
@@ -51,9 +59,10 @@ def start_subscriber(session_factory):
 
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
     client.on_message = on_message
-    client.connect(BROKER_HOST, BROKER_PORT, keepalive=60)
+    client.reconnect_delay_set(min_delay=1, max_delay=30)
+    client.connect_async(BROKER_HOST, BROKER_PORT, keepalive=60)
+    client.loop_start()
 
-    thread = threading.Thread(target=client.loop_forever, daemon=True)
-    thread.start()
     return client
