@@ -1,4 +1,4 @@
-export const DEFAULT_BROKER_URL = 'ws://localhost:9001';
+export const DEFAULT_BROKER_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:9001';
 export const FALLBACK_BROKER_URL = 'wss://test.mosquitto.org:8081';
 
 // Wildcard subscription — matches cooperative/device/{deviceId}/sensor/{type}

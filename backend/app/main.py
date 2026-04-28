@@ -1,3 +1,4 @@
+import os
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -8,10 +9,15 @@ from app.routers import auth, sensors
 
 logger = logging.getLogger(__name__)
 
+_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./sensors.db")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    # SQLite dev: create tables via create_all.
+    # PostgreSQL (Docker): alembic upgrade head runs in Dockerfile CMD before uvicorn.
+    if _DATABASE_URL.startswith("sqlite"):
+        init_db()
     app.state.mqtt_client = None
     try:
         app.state.mqtt_client = start_subscriber(SessionLocal)

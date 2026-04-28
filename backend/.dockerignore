@@ -1,0 +1,11 @@
+.venv
+.venv-test
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+sensors.db
+.env
+*.egg-info
+cooperative_iot_monitor_backend.egg-info
+uv.lock

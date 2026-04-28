@@ -1,6 +1,6 @@
 # Codex Working Memory — Cooperative IoT Monitor
 
-Last updated: 2026-04-25
+Last updated: 2026-04-28
 
 ## Project Snapshot
 
@@ -64,11 +64,25 @@ Main integration contract today (frontend + backend + simulator):
 - Root README now references existing paths (`frontend/`, `designDocs/`, `.env.example`) and valid setup commands.
 - Added `backend/.env.example`.
 
+## Completed Sprints
+
+- Sprint 01 — ESP32 Simulator (basic) ✅
+- Sprint 02 — Auth (JWT login, protected routes) ✅
+- Sprint 03 — Historical charts (native SVG) ✅
+- Sprint 04 — Multi-device simulator ✅
+- Sprint 05 — Docker Compose (mosquitto + postgres + backend + frontend + simulator) ✅
+- Sprint 06 — Alembic migrations + PostgreSQL production database ✅
+
 ## Current Open Risks
 
 ### P2 — Default JWT secret remains weak for production
-- `backend/app/auth.py` still defaults to `change-me-in-production` when env var is unset.
-- Acceptable for local dev; production should require explicit secret configuration.
+- `backend/app/auth.py` defaults to `change-me-in-production`; docker-compose.yml defaults to `dev-secret-change-in-production`.
+- Copy `.env.example` → `.env` and set `JWT_SECRET_KEY` to a real secret before any public deployment.
+- Generate with: `python -c "import secrets; print(secrets.token_hex(32))"`
+
+### P2 — uv.lock not updated after adding alembic + psycopg2-binary
+- `pyproject.toml` and `requirements.txt` were updated but `uv.lock` was not regenerated.
+- Run `uv add alembic psycopg2-binary` in `backend/` to sync the lockfile for local dev.
 
 ## Verification Log (2026-04-25)
 
