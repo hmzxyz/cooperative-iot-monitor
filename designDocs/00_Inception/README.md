@@ -26,24 +26,24 @@ A full-stack IoT monitoring system for cooperative management, featuring:
 ## Setup Instructions
 1. Clone repository
 ```bash
-git clone https://github.com/your/repo.git
+ git clone https://github.com/your/repo.git
 ```
 2. Install dependencies
 ```bash
-npm install
-pip install -r requirements.txt
+ npm install
+ pip install -r requirements.txt
 ```
-3. Configure environment variables (`.env` file required)
+3. Configure environment variables (.env file required)
 4. Start services
 ```bash
-npm run dev
+ npm run dev
 # or
 python backend/app/main.py
 ```
 
 ## Current Status
 - ✅ Sprint 0: Auth system stabilized
--   Sprint 1: Real sensor integration (in progress)
+- • Sprint 1: Real sensor integration (in progress)
 - ❗ Sprint 2-4: Mobile & accounting features (planned)
 
 ## Contact
@@ -51,4 +51,8 @@ python backend/app/main.py
 
 ## Roadmap
 
-![Sprint Plan](docs/sprint-roadmap-diagram.png)
+[Sprint Plan](designDocs/00_Inception/CONTRIBUTING.md)
+designDocs/00_Inception/getting-started.md
+
+
+**Technical Learning Guide**: designDocs/learning.md
