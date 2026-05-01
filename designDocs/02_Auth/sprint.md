@@ -183,6 +183,6 @@ Pass `Authorization: Bearer <token>` header on `GET /api/sensors/` and `GET /api
 - [x] **Sprint 01** — ESP32 Simulator (Node.js MQTT publisher, SQLite persistence)
 - [x] **Sprint 02** — Auth (JWT login, protected routes, user model) ← **current**
 - [x] **Sprint 03** — Historical charts in the frontend (REST polling `GET /api/sensors/`) → `designDocs/03_HistoricalCharts/sprint.md`
-- [ ] **Sprint 04** — Multi-device support: simulator instances per device ID, `device_id` column on `SensorReading`
-- [ ] **Sprint 05** — Docker Compose: mosquitto + backend + frontend in one `docker-compose.yml`
-- [ ] **Sprint 06** — Alembic migrations, switch to PostgreSQL for production
+- [x] **Sprint 04** — Multi-device support: simulator instances per device ID, `device_id` column on `SensorReading`
+- [x] **Sprint 05** — Docker Compose: mosquitto + backend + frontend in one `docker-compose.yml`
+- [x] **Sprint 06** — Alembic migrations, switch to PostgreSQL for production

@@ -61,6 +61,28 @@ services:
       - backend
     restart: unless-stopped
 
+  # ── n8n workflow automation ────────────────────────────────────────────────
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-Africa/Tunis}
+      TZ: ${TZ:-Africa/Tunis}
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_RUNNERS_ENABLED: "true"
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://localhost:5678/}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - backend
+      - postgres
+      - mosquitto
+    restart: unless-stopped
+
   # ── ESP32 simulator (optional — comment out to use real hardware) ──────────
   simulator:
     build:
@@ -74,3 +96,4 @@ services:
 
 volumes:
   postgres_data:
+  n8n_data:

@@ -208,5 +208,5 @@ frontend/src/
 - [x] **Sprint 02** — Auth (JWT login, protected routes)
 - [x] **Sprint 03** — Historical charts
 - [x] **Sprint 04** — Multi-device simulator ← **current**
-- [ ] **Sprint 05** — Docker Compose: mosquitto + backend + frontend
-- [ ] **Sprint 06** — Alembic migrations, PostgreSQL for production
+- [x] **Sprint 05** — Docker Compose: mosquitto + backend + frontend
+- [x] **Sprint 06** — Alembic migrations, PostgreSQL for production

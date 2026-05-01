@@ -138,5 +138,5 @@ frontend/
 - [x] **Sprint 02** — Auth (JWT login, protected routes)
 - [x] **Sprint 03** — Historical charts ← **current**
 - [x] **Sprint 04** — Multi-device support: `device_id` on `SensorReading`, multiple simulator instances → `designDocs/04_MultiDeviceSimulator/sprint.md`
-- [ ] **Sprint 05** — Docker Compose: mosquitto + backend + frontend
-- [ ] **Sprint 06** — Alembic migrations, PostgreSQL for production
+- [x] **Sprint 05** — Docker Compose: mosquitto + backend + frontend
+- [x] **Sprint 06** — Alembic migrations, PostgreSQL for production

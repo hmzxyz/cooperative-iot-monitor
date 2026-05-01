@@ -1,6 +1,15 @@
 # Codex Working Memory — Cooperative IoT Monitor
 
-Last updated: 2026-04-28
+Last updated: 2026-04-29
+
+## Recent Commits (Latest First)
+
+- `2026-04-28` — `d6a998d` — Sprint 05/06 delivery: Dockerfiles and compose stack (mosquitto, backend, frontend, simulator), Alembic setup, initial migration, PostgreSQL readiness updates, and sprint docs.
+- `2026-04-25` — `ce62e6f` — Backend dependency fix: added `python-multipart` entries in `backend/pyproject.toml` and `backend/requirements.txt`.
+- `2026-04-25` — `2cce437` — Frontend/backend login flow fixes, backend MQTT startup robustness improvements, README and contributor docs updates, plus `codex.md` refresh.
+- `2026-04-23` — `c44b17a` — Backend runtime stabilization: dependency/lockfile updates and initial `backend/sensors.db` addition.
+- `2026-04-23` — `2934c3b` — Implemented ESP32 multi-device simulator, auth and sensor backend routes/models, history chart integration, and sprint-design document structure.
+- `2026-04-21` — `1e04cd4` — Added project docs/sprints baseline, license, and early backend/frontend support files.
 
 ## Project Snapshot
 
