@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../api.js';
-import { useAuth } from '../AuthContext.jsx';
+import { useAuth } from '../context/AuthContext';
 
 const POLL_INTERVAL_MS = 10_000;
 

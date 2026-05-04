@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAuth } from '../AuthContext.jsx';
+import { useAuth } from '../context/AuthContext';
 import { useSensorHistory } from '../hooks/useSensorHistory.js';
 
 const LINE_COLOR = '#3b82f6';

@@ -19,7 +19,6 @@ def _parse_topic(topic: str):
         return parts[2], parts[4]
     return None, None
 
-
 def start_subscriber(session_factory):
     def on_connect(client, userdata, flags, reason_code, properties):
         if reason_code != 0:

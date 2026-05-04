@@ -2,9 +2,9 @@
 #include <PubSubClient.h>
 
 // Change these values before uploading to your ESP32.
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-const char* mqtt_server = "192.168.100.72";
+const char* ssid = "TUNISIETELECOM-2.4G-WVq3";
+const char* password = "9FA2DGfE";
+const char* mqtt_server = "192.168.100.67";
 const int mqtt_port = 1883;
 const char* device_id = "esp32-firmware-01";
 char topic_temperature[96];

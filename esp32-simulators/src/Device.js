@@ -58,7 +58,13 @@ export class Device {
       clearInterval(this._timer);
     });
 
-    client.on('error', (err) => console.error(`[${this.deviceId}]`, err.message));
+    client.on('error', (err) => {
+      const nested = Array.isArray(err?.errors)
+        ? err.errors.map((entry) => entry?.message || entry?.code || String(entry)).join('; ')
+        : '';
+      const message = err?.message || err?.code || nested || String(err || 'unknown error');
+      console.error(`[${this.deviceId}] ${message}`);
+    });
     client.on('close', () => console.warn(`[${this.deviceId}] disconnected`));
   }
 

@@ -4,15 +4,15 @@ A simulated IoT monitoring system for cooperative production.
 
 ## Overview
 
-This repository is a proof-of-concept for a cooperative production monitoring system using MQTT and an ESP32 device.
+This repository is a proof-of-concept for cooperative production monitoring using MQTT, FastAPI, React, and ESP32 profiles.
 
 ### Components
 
 - `backend/` — FastAPI API with JWT auth, MQTT ingestion, and SQLite persistence.
 - `frontend/` — React + Vite dashboard with login, live MQTT cards, and history charts.
 - `esp32-simulators/` — Node.js simulator that publishes realistic multi-device sensor streams.
-- `esp32-firmware/esp32-firmware.ino` — ESP32 firmware that publishes sensor streams over MQTT.
-- `designDocs/` — sprint notes and implementation docs.
+- `esp32-firmware/` — ESP32 firmware profiles and upload notes.
+- `designDocs/` — sprint notes, merged PFE-ready sprint material, and implementation docs.
 
 ## Getting Started
 
@@ -24,26 +24,33 @@ This repository is a proof-of-concept for a cooperative production monitoring sy
 
 ## Quick Start
 
+- One-command local stack:
+  - `./run_local_stack.sh`
+  - Optional (real ESP32 only): `RUN_SIMULATOR=0 ./run_local_stack.sh`
+  - Optional (reuse existing MQTT broker on `localhost:1883`): `RUN_MOSQUITTO=0 ./run_local_stack.sh`
 - Backend:
-  - Create a Python virtual environment and install dependencies:
-    - `pip install -r backend/requirements.txt` (compat path), or
-    - `cd backend && uv sync`.
-  - Copy `backend/.env.example` to `.env` if needed.
-  - From `backend/`, run:
-    - `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
+  - Create/install dependencies:
+    - `pip install -r backend/requirements.txt`, or
+    - `cd backend && uv sync`
+  - Run:
+    - `cd backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
 - Frontend:
-  - From `frontend/`, install dependencies with `npm install` and start the dashboard with `npm run dev`.
+  - `cd frontend && npm install && npm run dev`
 - Simulator (optional):
-  - From `esp32-simulators/`, run `npm install && npm start`.
+  - `cd esp32-simulators && npm install && npm start`
 
 ## Notes
 
 - MQTT broker setup guidance is in `designDocs/00_Inception/notes/MQTT.md`.
 - Backend uses SQLite by default (`backend/sensors.db`).
+- Backend migrations include technician-auth columns (`backend/alembic/versions/002_add_technician_auth_columns.py`).
 - Active topic contract:
   - `cooperative/device/{device_id}/sensor/{sensor_id}`
   - numeric payloads for `temperature`, `humidity`, `weight`, `flow`
+- PFE sprint chapter organization is in `designDocs/PFE_BOOK/01_sprint_catalog.md`.
 
-## Recommended Files
+## Key Docs
 
-- `.gitignore` — Ignore IDE files, build artifacts, and temporary files.
+- `backend/README.md`
+- `esp32-firmware/README.md`
+- `designDocs/README.md`

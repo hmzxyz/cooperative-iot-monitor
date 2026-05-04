@@ -1,7 +1,21 @@
 import mqtt from 'mqtt';
 import { DEVICE_TOPIC_WILDCARD, MOCK_INTERVAL_MS, MQTT_STALE_TIMEOUT_MS, parseSensorTopic } from './config.js';
 
-const randomBetween = (min, max) => Number((Math.random() * (max - min) + min).toFixed(1));
+const MOCK_SENSOR_PROFILES = {
+  temperature: { min: 18, max: 35, initial: 24.2 },
+  humidity: { min: 40, max: 90, initial: 63.5 },
+  weight: { min: 0, max: 50, initial: 2.5 },
+  flow: { min: 0, max: 10, initial: 1.9 },
+};
+
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+const randomInitial = ({ min, max, initial }) => {
+  if (Number.isFinite(initial)) {
+    return Number(initial.toFixed(1));
+  }
+  return Number((Math.random() * (max - min) + min).toFixed(1));
+};
 
 export default class MqttManager {
   constructor({ brokerUrl, onStatusChange, onData, onMockModeChange }) {
@@ -16,6 +30,15 @@ export default class MqttManager {
     this.forceMock = false;
     this.mockActive = true;
     this.connected = false;
+    this.mockTick = 0;
+    this.fillTarget = 40.5;
+    this.isCollecting = false;
+    this.mockValues = Object.fromEntries(
+      Object.entries(MOCK_SENSOR_PROFILES).map(([sensorKey, profile]) => [
+        sensorKey,
+        randomInitial(profile),
+      ])
+    );
   }
 
   connect() {
@@ -89,6 +112,7 @@ export default class MqttManager {
     this.lastMessageAt = Date.now();
     this.mockActive = false;
     this.onMockModeChange(false);
+    this.mockValues[sensorKey] = Number(value.toFixed(1));
     this.onData(sensorKey, value, false);
   }
 
@@ -110,16 +134,69 @@ export default class MqttManager {
       this.onMockModeChange(true);
     }
 
-    const values = {
-      temperature: randomBetween(18, 35),
-      humidity: randomBetween(30, 80),
-      weight: randomBetween(0, 500),
-      flow: randomBetween(0, 100),
-    };
+    this.mockTick += 1;
+    const temperature = this.nextTemperature();
+    const humidity = this.nextHumidity(temperature);
+    const weight = this.nextWeight();
+    const flow = this.nextFlow(weight);
 
-    Object.entries(values).forEach(([key, value]) => {
-      this.onData(key, value, true);
-    });
+    this.publishMockValue('temperature', temperature);
+    this.publishMockValue('humidity', humidity);
+    this.publishMockValue('weight', weight);
+    this.publishMockValue('flow', flow);
+  }
+
+  publishMockValue(sensorKey, value) {
+    const profile = MOCK_SENSOR_PROFILES[sensorKey];
+    const nextValue = Number(clamp(value, profile.min, profile.max).toFixed(1));
+    this.mockValues[sensorKey] = nextValue;
+    this.onData(sensorKey, nextValue, true);
+  }
+
+  nextTemperature() {
+    const base = 24.3 + Math.sin(this.mockTick / 8) * 1.2;
+    const loadInfluence = this.isCollecting ? 0.8 : -0.15;
+    const drift = ((Math.random() - 0.5) * 0.3);
+    return base + loadInfluence + drift;
+  }
+
+  nextHumidity(temperature) {
+    const inverseCorrelation = 68 - (temperature - 24.3) * 1.9;
+    const drift = ((Math.random() - 0.5) * 0.8);
+    return inverseCorrelation + drift;
+  }
+
+  nextWeight() {
+    if (this.isCollecting) {
+      const drop = 4.2 + Math.random() * 0.6;
+      const next = this.mockValues.weight - drop;
+      if (next <= 0.5) {
+        this.isCollecting = false;
+        this.fillTarget = 38 + Math.random() * 8;
+        return 0.4 + Math.random() * 0.2;
+      }
+      return next;
+    }
+
+    const fill = 0.38 + Math.random() * 0.12;
+    const noise = (Math.random() - 0.45) * 0.15;
+    const next = this.mockValues.weight + fill + noise;
+    if (next >= this.fillTarget) {
+      this.isCollecting = true;
+    }
+    return next;
+  }
+
+  nextFlow(weight) {
+    if (this.isCollecting) {
+      return Math.random() * 0.2;
+    }
+
+    const previousWeight = Number.isFinite(this.mockValues.weight) ? this.mockValues.weight : weight;
+    const positiveDelta = Math.max(0, weight - previousWeight);
+    const base = 1.4 + positiveDelta * 4.8;
+    const noise = (Math.random() - 0.5) * 0.25;
+    return base + noise;
   }
 
   startFallbackTimer() {

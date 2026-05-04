@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db, SessionLocal
 from app.mqtt_subscriber import start_subscriber
-from app.routers import auth, sensors
+from app.routers import auth, sensors, prediction_service
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,8 @@ async def lifespan(app: FastAPI):
     app.state.mqtt_client = None
     try:
         app.state.mqtt_client = start_subscriber(SessionLocal)
+    except OSError as exc:
+        logger.warning("MQTT subscriber unavailable (%s). API will continue without MQTT ingestion.", exc)
     except Exception:
         logger.exception("Failed to start MQTT subscriber; API will continue without MQTT ingestion.")
     try:

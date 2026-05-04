@@ -26,8 +26,8 @@ export function parseSensorTopic(topic) {
   return { deviceId: parts[2], sensorKey };
 }
 
-export const MOCK_INTERVAL_MS = 2000;
-export const MQTT_STALE_TIMEOUT_MS = 5000;
+export const MOCK_INTERVAL_MS = 4000;
+export const MQTT_STALE_TIMEOUT_MS = 12000;
 export const SENSOR_CONFIGS = {
   temperature: { label: 'Temperature', unit: '°C' },
   humidity:    { label: 'Humidity', unit: '%' },

@@ -1,20 +1,60 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import MqttManager from './MqttManager.js';
 import SensorCard from './components/SensorCard.jsx';
 import HistoryChart from './components/HistoryChart.jsx';
+import AlertsSidebar from './components/AlertsSidebar.jsx';
 import { DEFAULT_BROKER_URL, MQTT_TOPICS, SENSOR_CONFIGS } from './config.js';
-import { useAuth } from './AuthContext.jsx';
+import { apiFetch } from './api.js';
+import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage.jsx';
+import usePrediction from './usePrediction';
 
-const buildInitialSensors = () => ({
-  temperature: { value: 24.0, unit: '°C' },
-  humidity: { value: 55, unit: '%' },
-  weight: { value: 120, unit: 'kg' },
-  flow: { value: 12, unit: 'L/min' },
-});
+const SENSOR_RANGES = {
+  temperature: { min: 18, max: 35, initial: 24, alpha: 0.3, maxDelta: 0.6 },
+  humidity: { min: 40, max: 90, initial: 60, alpha: 0.28, maxDelta: 1.4 },
+  weight: { min: 0, max: 50, initial: 10, alpha: 0.25, maxDelta: 1.8 },
+  flow: { min: 0, max: 10, initial: 2, alpha: 0.3, maxDelta: 0.5 },
+};
+
+const SENSOR_KEYS = Object.keys(SENSOR_CONFIGS);
+
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+const smoothSensorValue = (sensorKey, previousValue, incomingValue) => {
+  const profile = SENSOR_RANGES[sensorKey];
+  if (!profile) {
+    return Number(incomingValue.toFixed(1));
+  }
+
+  const boundedIncoming = clamp(incomingValue, profile.min, profile.max);
+  if (!Number.isFinite(previousValue)) {
+    return Number(boundedIncoming.toFixed(1));
+  }
+
+  const blended = previousValue + (boundedIncoming - previousValue) * profile.alpha;
+  const delta = clamp(blended - previousValue, -profile.maxDelta, profile.maxDelta);
+  return Number(clamp(previousValue + delta, profile.min, profile.max).toFixed(1));
+};
+
+const buildInitialSensors = () =>
+  SENSOR_KEYS.reduce((acc, sensorKey) => {
+    acc[sensorKey] = {
+      value: SENSOR_RANGES[sensorKey].initial,
+      unit: SENSOR_CONFIGS[sensorKey].unit,
+      source: 'bootstrap',
+    };
+    return acc;
+  }, {});
+
+const sourceLabel = (source) => {
+  if (source === 'live') return 'Live MQTT';
+  if (source === 'api') return 'Backend persisted';
+  if (source === 'mock') return 'Simulated fallback';
+  return 'Waiting for data';
+};
 
 function Dashboard() {
-  const { logout, username } = useAuth();
+  const { logout, username, token } = useAuth();
   const [sensorData, setSensorData] = useState(buildInitialSensors());
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   const [mockMode, setMockMode] = useState(true);
@@ -30,24 +70,36 @@ function Dashboard() {
         label: SENSOR_CONFIGS[sensorKey].label,
         unit: SENSOR_CONFIGS[sensorKey].unit,
         value: sensorData[sensorKey]?.value ?? '--',
+        description: sourceLabel(sensorData[sensorKey]?.source),
       })),
     [sensorData]
   );
+
+  const applySensorUpdate = useCallback((sensorKey, rawValue, source) => {
+    if (!Number.isFinite(rawValue)) {
+      return;
+    }
+    setSensorData((prev) => {
+      const previousValue = prev[sensorKey]?.value;
+      const nextValue = smoothSensorValue(sensorKey, previousValue, rawValue);
+      return {
+        ...prev,
+        [sensorKey]: {
+          value: nextValue,
+          unit: SENSOR_CONFIGS[sensorKey]?.unit ?? '',
+          source,
+        },
+      };
+    });
+    setLastUpdated(new Date());
+  }, []);
 
   useEffect(() => {
     mqttManagerRef.current = new MqttManager({
       brokerUrl,
       onStatusChange: (status) => setConnectionStatus(status),
       onData: (sensorKey, value, isMock) => {
-        setSensorData((prev) => ({
-          ...prev,
-          [sensorKey]: {
-            value: Number(value.toFixed(1)),
-            unit: SENSOR_CONFIGS[sensorKey]?.unit ?? '',
-            source: isMock ? 'mock' : 'live',
-          },
-        }));
-        setLastUpdated(new Date());
+        applySensorUpdate(sensorKey, value, isMock ? 'mock' : 'live');
       },
       onMockModeChange: (active) => setMockMode(active),
     });
@@ -57,7 +109,37 @@ function Dashboard() {
     return () => {
       mqttManagerRef.current.disconnect();
     };
-  }, []);
+  }, [applySensorUpdate]);
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    const hydrateLatestReadings = async () => {
+      // Prefer live MQTT when connected; otherwise hydrate from persisted backend data.
+      if (!mockMode && connectionStatus === 'Connected') {
+        return;
+      }
+      try {
+        const latest = await apiFetch('/sensors/latest', token);
+        SENSOR_KEYS.forEach((sensorKey) => {
+          const value = Number(latest?.[sensorKey]?.payload?.value);
+          if (Number.isFinite(value)) {
+            applySensorUpdate(sensorKey, value, 'api');
+          }
+        });
+      } catch (err) {
+        if (err.message === 'unauthorized') {
+          logout();
+        }
+      }
+    };
+
+    hydrateLatestReadings();
+    const intervalId = setInterval(hydrateLatestReadings, 12_000);
+    return () => clearInterval(intervalId);
+  }, [token, mockMode, connectionStatus, logout, applySensorUpdate]);
 
   const toggleMode = () => {
     const nextMockMode = !mockMode;
@@ -87,7 +169,14 @@ function Dashboard() {
 
   return (
     <div className="app-shell">
-      <header className="hero-panel">
+      <div className="dashboard-wrapper">
+        <AlertsSidebar
+          connectionStatus={connectionStatus}
+          mockMode={mockMode}
+          lastUpdated={lastUpdated}
+        />
+        <div className="main-content">
+          <header className="hero-panel">
         <div>
           <p className="eyebrow">Cooperative IoT Monitor</p>
           <h1>Live Sensor Dashboard</h1>
@@ -134,8 +223,8 @@ function Dashboard() {
       </section>
 
       <main className="grid-panel">
-        {sensorCards.map(({ key, label, value, unit }) => (
-          <SensorCard key={key} label={label} value={value} unit={unit} />
+        {sensorCards.map(({ key, label, value, unit, description }) => (
+          <SensorCard key={key} label={label} value={value} unit={unit} description={description} />
         ))}
       </main>
 
@@ -150,9 +239,11 @@ function Dashboard() {
 
       <footer className="footer-note">
         <p>
-          The app automatically generates placeholder values when MQTT is unavailable. Real values will override placeholder readings when messages are received on configured topics.
+          When live MQTT is unavailable, the dashboard falls back to backend-persisted readings and smooth simulated values. Live MQTT data always takes priority.
         </p>
       </footer>
+    </div>
+    </div>
     </div>
   );
 }

@@ -54,3 +54,6 @@ guide.md
 .env
 frontend/.env
 backend/.env
+
+# Local-only documents — do not publish
+01_Alfa_Docs/

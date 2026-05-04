@@ -1,0 +1,59 @@
+export const sprintTasks = [
+  {
+    id: 1,
+    title: 'Stabilize failure prediction endpoint',
+    owner: 'backend',
+    done: true,
+    dueDate: '2026-05-03',
+  },
+  {
+    id: 2,
+    title: 'Refine AI dashboard layout and states',
+    owner: 'frontend',
+    done: true,
+    dueDate: '2026-05-03',
+  },
+  {
+    id: 3,
+    title: 'Standardize sprint naming and report structure',
+    owner: 'docs',
+    done: true,
+    dueDate: '2026-05-03',
+  },
+  {
+    id: 4,
+    title: 'Technician authentication integration',
+    owner: 'backend',
+    done: false,
+    dueDate: '2026-05-05',
+  },
+  {
+    id: 5,
+    title: 'Alert management API',
+    owner: 'backend',
+    done: false,
+    dueDate: '2026-05-06',
+  },
+  {
+    id: 6,
+    title: 'Failure visualization on dashboard',
+    owner: 'frontend',
+    done: false,
+    dueDate: '2026-05-07',
+  },
+  {
+    id: 7,
+    title: 'Mobile responsiveness for sidebar',
+    owner: 'frontend',
+    done: false,
+    dueDate: '2026-05-08',
+  },
+  {
+    id: 8,
+    title: 'Prediction performance cleanup',
+    owner: 'backend',
+    done: false,
+    dueDate: '2026-05-10',
+  },
+]
+

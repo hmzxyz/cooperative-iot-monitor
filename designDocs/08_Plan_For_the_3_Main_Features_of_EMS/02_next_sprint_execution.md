@@ -1,44 +1,25 @@
-# Sprint 08_xx Execution Checklist
+# Sprint 08_xx Execution Checklist (Archived)
 
 ## Goal
 
-Start Sprint 08 immediately with a clear sequence, owners, and verification points.
+Archive actual Sprint 08 progress and keep only verified completion markers.
 
-## Day 1 Setup
+## Completed in Sprint 08
 
-- [ ] Confirm production-like `.env` values for `backend`, `postgres`, and `n8n`.
-- [ ] Start stack: `docker compose up --build`.
-- [ ] Verify health:
-  - frontend: `http://localhost`
-  - backend: `http://localhost:8000/health`
-  - n8n: `http://localhost:5678`
+- [x] Verify implementation baseline against code.
+- [x] Add minimal backend smoke tests for auth and sensor routes.
+- [x] Add GitHub Actions backend CI workflow.
+- [x] Update Sprint 08 report with code-verified status.
+- [x] Prepare next sprint backlog and reprioritize.
 
-## Workstream A: n8n Automations
+## Not Completed in Sprint 08 (Carry-Over)
 
-- [ ] Create workflow: sensor threshold breach -> alert notification.
-- [ ] Create workflow: stale device (no readings for X minutes) -> incident creation.
-- [ ] Export and document workflows in `designDocs/08_Plan_For_the_3_Main_Features_of_EMS/`.
+- [ ] n8n workflows for threshold alerts and stale-device incidents.
+- [ ] KPI backend endpoints and frontend KPI widgets.
+- [ ] Incident lifecycle schema/API/UI.
+- [ ] Final demo artifacts for the 3 EMS feature streams.
 
-## Workstream B: KPI Backend + Frontend
+## Exit Summary
 
-- [ ] Add backend KPI endpoint(s) under `/api/sensors/` or `/api/kpi/`.
-- [ ] Add frontend KPI widgets with polling and error states.
-- [ ] Validate against multi-device simulator data.
-
-## Workstream C: Incident Lifecycle
-
-- [ ] Add DB schema migration for incidents.
-- [ ] Add incident API routes (`create`, `list`, `ack`, `resolve`).
-- [ ] Add frontend incident list/timeline with action buttons.
-
-## Quality Gate
-
-- [x] Add minimal backend tests for auth + sensor core routes.
-- [x] Add CI workflow for backend tests.
-- [ ] Update sprint report with final endpoint list and screenshots.
-
-## Exit Criteria
-
-- [ ] All three EMS features demonstrable in one local run.
-- [ ] Deployment steps documented with exact commands.
-- [ ] Risk list and next sprint backlog prepared.
+- Sprint 08 exits as an audit + planning sprint.
+- Delivery sprint for technician auth starts in Sprint 09 (`designDocs/09_xx_Technician_Auth/`).

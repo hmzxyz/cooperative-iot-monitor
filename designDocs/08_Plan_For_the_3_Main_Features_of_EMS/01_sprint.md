@@ -1,71 +1,57 @@
-# Sprint 08_xx: EMS Feature Audit + Next Sprint Plan
+# Sprint 08_xx: EMS Feature Audit + Carry-Over Summary
 
-## Date
+## Dates
 
-2026-04-30
+- Start: 2026-04-30
+- Updated: 2026-05-01
 
 ## Objective
 
-Review implemented features across the codebase, reconcile sprint reports with reality, and lock the next sprint around 3 high-impact EMS features.
+Validate implemented features against code, close Sprint 08 as an audit/planning sprint, and carry unfinished EMS delivery items to a future sprint.
 
 ---
 
-## Status: IN PROGRESS 🚧
+## Status: CLOSED (Audit Completed) ✅
 
-## Implemented Feature Audit (Code-Verified)
+## Code-Verified Baseline
 
 | Area | Status | Evidence |
 |------|--------|----------|
 | Auth (register/login + JWT-protected API) | ✅ Implemented | `backend/app/routers/auth.py`, `backend/app/auth.py` |
-| MQTT ingestion from topic contract `cooperative/device/{device_id}/sensor/{sensor_id}` | ✅ Implemented | `backend/app/mqtt_subscriber.py` |
+| MQTT ingestion from `cooperative/device/{device_id}/sensor/{sensor_id}` | ✅ Implemented | `backend/app/mqtt_subscriber.py` |
 | Historical readings API + latest API + device list | ✅ Implemented | `backend/app/routers/sensors.py` |
 | Historical charts on frontend | ✅ Implemented | `frontend/src/components/HistoryChart.jsx`, `frontend/src/hooks/useSensorHistory.js` |
 | Multi-device simulator and topic parser | ✅ Implemented | `esp32-simulators/src/Device.js`, `frontend/src/config.js` |
-| Dockerized stack (mosquitto, postgres, backend, frontend, simulator) | ✅ Implemented | `docker-compose.yml` |
-| Alembic migrations + PostgreSQL runtime path | ✅ Implemented | `backend/alembic/`, `backend/Dockerfile`, `backend/app/main.py` |
-| n8n automation service bootstrap | ✅ Implemented | `docker-compose.yml` (`n8n`, `n8n_data`, port `5678`) |
+| Dockerized stack (mosquitto, postgres, backend, frontend, simulator, n8n) | ✅ Implemented | `docker-compose.yml` |
+| Alembic migrations + PostgreSQL runtime path | ✅ Implemented | `backend/alembic/`, `backend/app/main.py`, `backend/Dockerfile` |
+| Backend smoke tests for auth/sensors | ✅ Implemented | `backend/tests/test_api_smoke.py` |
+| Backend CI workflow | ✅ Implemented | `.github/workflows/backend-ci.yml` |
 
 ---
 
-## Gaps Blocking Scale
+## Sprint 08 Outcome
 
-| Gap | Current State |
-|-----|---------------|
-| Automated tests | Backend smoke tests added; frontend tests still missing |
-| CI/CD | Backend CI workflow added; no full lint/build/deploy pipeline yet |
-| n8n workflows | Service exists, but no versioned workflows/runbooks yet |
-| Observability | Basic logs only, no alert policy/SLO tracking |
-
----
-
-## 3 Main EMS Features for Upcoming Sprint
-
-### 1) Workflow Automation & Alerting (n8n)
-- Trigger alerts from sensor thresholds (temperature/humidity/weight/flow).
-- Add escalation path (Telegram/Email/Slack webhook).
-- Store workflow metadata and runbook in repo docs.
-
-### 2) Operational KPI API + Dashboard Widgets
-- Add aggregated KPI endpoints (per device and global): min/max/avg, throughput trend, stale device detection.
-- Add frontend KPI cards and trend indicators.
-
-### 3) Incident Timeline & Operator Actions
-- Add incident model/table (`open`, `acknowledged`, `resolved`) with timestamps and actor.
-- Add API endpoints and a frontend timeline panel for auditability.
+| Item | Result |
+|------|--------|
+| Audit and reconciliation of implemented features | ✅ Completed |
+| CI/smoke-test baseline | ✅ Completed |
+| n8n workflow implementation | ❌ Not delivered |
+| KPI API + dashboard widgets | ❌ Not delivered |
+| Incident lifecycle (DB + API + UI) | ❌ Not delivered |
 
 ---
 
-## Sprint 08 Definition of Done
+## Carry-Over Backlog
 
-- [ ] At least 2 production-useful n8n workflows active and documented.
-- [ ] KPI endpoint(s) merged and consumed by frontend widgets.
-- [ ] Incident lifecycle implemented end-to-end (DB + API + UI).
-- [x] Smoke tests for auth + sensors core routes added to backend.
-- [x] CI pipeline created with backend test stage.
+1. n8n workflow automation and documented runbooks.
+2. KPI aggregation endpoints and frontend KPI cards.
+3. Incident lifecycle model, routes, and timeline UI.
+4. Full CI/CD (lint/build/deploy stages).
+5. Frontend automated tests.
 
 ---
 
 ## Notes
 
-- This report updates the implementation baseline as of 2026-04-30.
-- Sprint 01–04 reports were synchronized to mark Sprint 05 and Sprint 06 as completed.
+- Sprint 08 closed as a planning/alignment sprint, not a feature delivery sprint.
+- Next sprint focus has been reprioritized to Sprint 09: Technician Sign-In + Account Recovery in `designDocs/09_xx_Technician_Auth/`.

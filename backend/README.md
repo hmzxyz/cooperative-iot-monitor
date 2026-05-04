@@ -1,0 +1,30 @@
+# Backend Service
+
+FastAPI API for authentication, sensor history, and MQTT ingestion.
+
+## Run Locally (SQLite)
+
+```bash
+cd backend
+.venv-test/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+- Default DB: `backend/sensors.db`
+- On startup, local SQLite schema is auto-created and missing auth columns are backfilled.
+
+## Run with Docker (PostgreSQL)
+
+```bash
+docker compose up --build backend postgres mosquitto
+```
+
+- Container startup runs: `alembic upgrade head && uvicorn ...`
+- Auth columns are added by Alembic revision `002`.
+
+## Useful Commands
+
+```bash
+cd backend
+.venv-test/bin/pytest -q
+alembic upgrade head
+```
