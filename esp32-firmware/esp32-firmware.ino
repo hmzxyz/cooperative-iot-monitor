@@ -26,26 +26,17 @@ void buildTopics() {
 }
 
 void connectWiFi() {
-  Serial.print("Connecting to WiFi");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
   }
-  Serial.println("\nWiFi connected");
-  Serial.println(WiFi.localIP());
 }
 
 void connectMQTT() {
   while (!mqttClient.connected()) {
-    Serial.print("Connecting to MQTT...");
     char clientId[64];
     snprintf(clientId, sizeof(clientId), "%s-client", DEVICE_ID);
-    if (mqttClient.connect(clientId)) {
-      Serial.println("connected");
-    } else {
-      Serial.print("failed rc=");
-      Serial.println(mqttClient.state());
+    if (!mqttClient.connect(clientId)) {
       delay(2000);
     }
   }
@@ -58,7 +49,6 @@ void publishFloat(const char* topic, float value) {
 }
 
 void setup() {
-  Serial.begin(115200);
   randomSeed(esp_random());
   buildTopics();
   connectWiFi();
@@ -89,7 +79,4 @@ void loop() {
   publishFloat(topicHumidity, humidity);
   publishFloat(topicWeight, weight);
   publishFloat(topicFlow, flow);
-
-  Serial.printf("Published: temp=%.2fC humidity=%.2f%% weight=%.2fkg flow=%.2fL/min\n",
-                temperature, humidity, weight, flow);
 }

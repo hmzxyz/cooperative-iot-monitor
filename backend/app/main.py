@@ -45,6 +45,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(sensors.router)
+app.include_router(prediction_service.prediction_router)
 
 
 @app.get("/health")

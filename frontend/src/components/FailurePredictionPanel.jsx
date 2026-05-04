@@ -1,14 +1,10 @@
-/**
- * Failure Prediction Panel Component
- * Displays AI prediction status for a specific sensor
- */
 export default function FailurePredictionPanel({ sensorType, prediction }) {
   if (!prediction) {
     return (
       <div className="prediction-panel">
         <h4>{getSensorLabel(sensorType)}</h4>
         <div className="prediction-status nominal">
-          <span className="status-indicator">●</span>
+          <span className="status-indicator" aria-hidden="true" />
           <span className="status-text">Nominal</span>
           <span className="confidence">--</span>
         </div>
@@ -29,7 +25,7 @@ export default function FailurePredictionPanel({ sensorType, prediction }) {
         <span className={`prediction-pill ${status}`}>{statusLabel}</span>
       </div>
       <div className={`prediction-status ${status}`}>
-        <span className="status-indicator">●</span>
+        <span className="status-indicator" aria-hidden="true" />
         <span className="status-text">{(confidence * 100).toFixed(0)}% confidence</span>
       </div>
       {prediction.features && (
@@ -54,10 +50,10 @@ export default function FailurePredictionPanel({ sensorType, prediction }) {
 
 function getSensorLabel(sensorType) {
   const labels = {
-    'temperature': '🌡️ Temperature',
-    'humidity': '💧 Humidity',
-    'weight': '⚖️ Weight',
-    'flow': '🔄 Flow Rate'
+    temperature: 'Temperature',
+    humidity: 'Humidity',
+    weight: 'Weight',
+    flow: 'Flow Rate',
   }
   return labels[sensorType] || sensorType
 }

@@ -42,7 +42,7 @@ export default function HistoryChart({ sensorId, label, unit }) {
       {error && <p className="history-chart__error">Could not load history</p>}
 
       {readings.length === 0 && !error && (
-        <p className="history-chart__empty">Waiting for data…</p>
+        <p className="history-chart__empty">Waiting for data...</p>
       )}
 
       {readings.length > 0 && (

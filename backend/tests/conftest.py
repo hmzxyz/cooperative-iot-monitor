@@ -2,6 +2,8 @@ import os
 import sys
 from pathlib import Path
 
+import pytest
+
 TEST_DB_PATH = Path(__file__).resolve().parent / "test_sensors.db"
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 
@@ -11,7 +13,7 @@ if str(BACKEND_ROOT) not in sys.path:
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB_PATH}"
 os.environ["JWT_SECRET_KEY"] = "test-secret-key"
 
-from app.database import SessionLocal, init_db
+from app.database import SessionLocal, engine, init_db
 from app.models.sensor_reading import SensorReading
 from app.models.user import User
 from app.routers import auth
@@ -34,11 +36,9 @@ def pytest_sessionstart(session):
 
 
 def pytest_sessionfinish(session, exitstatus):
+    engine.dispose()
     if TEST_DB_PATH.exists():
         TEST_DB_PATH.unlink()
-
-
-import pytest
 
 
 @pytest.fixture(autouse=True)

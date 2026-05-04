@@ -16,32 +16,23 @@ unsigned long lastPublishMs = 0;
 const unsigned long PUBLISH_INTERVAL_MS = 3000;
 
 void connectWiFi() {
-  Serial.print("Connecting to WiFi");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
   }
-  Serial.println("\nWiFi connected");
 }
 
 void connectMQTT() {
   while (!mqttClient.connected()) {
-    Serial.print("Connecting to MQTT...");
     char clientId[64];
     snprintf(clientId, sizeof(clientId), "%s-client", DEVICE_ID);
-    if (mqttClient.connect(clientId)) {
-      Serial.println("connected");
-    } else {
-      Serial.print("failed rc=");
-      Serial.println(mqttClient.state());
+    if (!mqttClient.connect(clientId)) {
       delay(2000);
     }
   }
 }
 
 void setup() {
-  Serial.begin(115200);
   randomSeed(esp_random());
   snprintf(topicTemperature, sizeof(topicTemperature), "cooperative/device/%s/sensor/temperature", DEVICE_ID);
   snprintf(topicHumidity, sizeof(topicHumidity), "cooperative/device/%s/sensor/humidity", DEVICE_ID);
@@ -72,6 +63,4 @@ void loop() {
   mqttClient.publish(topicTemperature, payload);
   dtostrf(humidity, 0, 2, payload);
   mqttClient.publish(topicHumidity, payload);
-
-  Serial.printf("Published: temp=%.2fC humidity=%.2f%%\n", temperature, humidity);
 }

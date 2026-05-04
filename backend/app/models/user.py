@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime, timezone
+
+from sqlalchemy import Column, DateTime, Integer, String
+
 from app.models.sensor_reading import Base
 
 
@@ -9,7 +11,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
-    role = Column(String, default="technician")  # technician, admin, viewer
+    role = Column(String, default="technician")
     security_question = Column(String)
     security_answer_hash = Column(String)
     phone = Column(String)
@@ -23,5 +25,5 @@ class User(Base):
             "role": self.role,
             "phone": self.phone,
             "last_login": self.last_login.isoformat() if self.last_login else None,
-            "created_at": self.created_at.isoformat()
+            "created_at": self.created_at.isoformat(),
         }

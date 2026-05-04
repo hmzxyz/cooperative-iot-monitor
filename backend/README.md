@@ -19,7 +19,7 @@ docker compose up --build backend postgres mosquitto
 ```
 
 - Container startup runs: `alembic upgrade head && uvicorn ...`
-- Auth columns are added by Alembic revision `002`.
+- Account role and recovery columns are added by Alembic revision `002`.
 
 ## Useful Commands
 

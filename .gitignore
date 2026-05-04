@@ -40,6 +40,12 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
+.venv*/
+
+# Local databases and backup files
+*.db
+*.backup
 
 # Node / frontend
 node_modules/

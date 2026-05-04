@@ -108,7 +108,6 @@ backend/
   requirements.txt      # fastapi, uvicorn, sqlalchemy, paho-mqtt, python-dotenv
   app/
     main.py             # FastAPI app, CORS, lifespan
-    config.py           # env var reads
     database.py         # SQLite engine, SessionLocal, init_db
     mqtt_subscriber.py  # paho-mqtt thread — subscribe & persist
     models/

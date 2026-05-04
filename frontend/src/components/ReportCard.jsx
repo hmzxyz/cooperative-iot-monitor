@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext'
 export default function ReportCard() {
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [lastUpdated, setLastUpdated] = useState(null)
   const { token } = useAuth()
 
@@ -20,9 +21,10 @@ export default function ReportCard() {
       try {
         const data = await apiFetch('/predict/summary', token)
         setSummary(data)
+        setError('')
         setLastUpdated(new Date())
-      } catch (error) {
-        console.error('Error fetching summary:', error)
+      } catch (err) {
+        setError(err.message || 'Could not load system status')
       } finally {
         setLoading(false)
       }
@@ -32,6 +34,7 @@ export default function ReportCard() {
   }, [token])
 
   if (loading) return <div className="report-card">Loading system status...</div>
+  if (error) return <div className="report-card">System status unavailable</div>
   if (!summary) return <div className="report-card">No data available</div>
 
   const healthTone = (() => {

@@ -10,12 +10,12 @@ Help AI assistants work productively in this repo by pointing to the right comma
 
 - `README.md` — high-level project overview and quick start.
 - `CLAUDE.md` — detailed component notes and commands for frontend/backend/simulator.
-- `docs/CONTRIBUTING.md` — contribution expectations.
+- `designDocs/docs/CONTRIBUTING.md` — contribution expectations.
 - `backend/` — FastAPI API, auth, database, MQTT subscriber.
 - `frontend/` — React dashboard, MQTT UI, vanilla CSS.
 - `esp32-simulators/` — Node.js simulator publishing MQTT sensor streams.
 - `esp32-firmware/` — Arduino firmware sketches.
-- `designDocs/` — sprint plans, implementation notes, architecture decisions.
+- `designDocs/` — architecture notes, implementation history, and project reference material.
 
 ## Recommended workflow
 
@@ -44,13 +44,13 @@ Help AI assistants work productively in this repo by pointing to the right comma
 ## When adding or fixing features
 
 - Update `backend/README.md` or `frontend/README.md` if setup changes are required.
-- Keep pull request changes minimal and align with existing sprint-style documentation in `designDocs/`.
+- Keep pull request changes minimal and update durable project documentation when behavior changes.
 - For backend work, use `pyproject.toml` and `requirements.txt` as dependency sources.
 
 ## Notes for AI assistants
 
 - The codebase already documents architecture and commands; avoid duplicating large sections of `CLAUDE.md` or `README.md`.
-- Use `designDocs/` as the planning source when a feature request references sprints or architecture rationale.
+- Use `designDocs/` as the planning source when a feature request references architecture rationale.
 - If tests are added, choose the framework consistent with the area: `pytest` for backend and `vitest`/`jest` for frontend.
 
 ## Example prompts

@@ -1,7 +1,6 @@
 export const DEFAULT_BROKER_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:9001';
-export const FALLBACK_BROKER_URL = 'wss://test.mosquitto.org:8081';
 
-// Wildcard subscription — matches cooperative/device/{deviceId}/sensor/{type}
+// Wildcard subscription for cooperative/device/{deviceId}/sensor/{type}.
 export const DEVICE_TOPIC_WILDCARD = 'cooperative/device/+/sensor/+';
 
 // Known sensor types (used for validation and mock data keys)
@@ -29,7 +28,7 @@ export function parseSensorTopic(topic) {
 export const MOCK_INTERVAL_MS = 4000;
 export const MQTT_STALE_TIMEOUT_MS = 12000;
 export const SENSOR_CONFIGS = {
-  temperature: { label: 'Temperature', unit: '°C' },
+  temperature: { label: 'Temperature', unit: 'C' },
   humidity:    { label: 'Humidity', unit: '%' },
   weight:      { label: 'Weight', unit: 'kg' },
   flow:        { label: 'Flow', unit: 'L/min' },

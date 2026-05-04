@@ -1,19 +1,14 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from './context/AuthContext'
 import { apiFetch } from './api.js'
 import { SENSOR_CONFIGS } from './config.js'
 
-/**
- * Custom hook for AI failure prediction
- * Uses the FastAPI prediction endpoint
- */
 export default function usePrediction() {
   const [predictions, setPredictions] = useState({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { token } = useAuth()
 
-  // Fetch predictions for all sensors
   const fetchPredictions = useCallback(async () => {
     if (!token) return
 
@@ -55,15 +50,13 @@ export default function usePrediction() {
       if (failedSensors.length > 0 && Object.keys(newPredictions).length === 0) {
         setError(`Predictions unavailable for ${failedSensors.join(', ')}`)
       }
-    } catch (error) {
-      console.error('Error fetching predictions:', error)
-      setError(error.message || 'Error loading predictions')
+    } catch (err) {
+      setError(err.message || 'Error loading predictions')
     } finally {
       setLoading(false)
     }
   }, [token])
 
-  // Auto-refresh predictions every 30 seconds
   useEffect(() => {
     if (!token) return
 

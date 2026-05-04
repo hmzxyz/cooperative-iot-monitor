@@ -1,4 +1,4 @@
-"""add technician auth columns
+"""add user account columns
 
 Revision ID: 002
 Revises: 001

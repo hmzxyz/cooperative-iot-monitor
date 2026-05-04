@@ -7,7 +7,6 @@ import { DEFAULT_BROKER_URL, MQTT_TOPICS, SENSOR_CONFIGS } from './config.js';
 import { apiFetch } from './api.js';
 import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage.jsx';
-import usePrediction from './usePrediction';
 
 const SENSOR_RANGES = {
   temperature: { min: 18, max: 35, initial: 24, alpha: 0.3, maxDelta: 0.6 },
@@ -156,15 +155,15 @@ function Dashboard() {
 
   const statusLabel = useMemo(() => {
     if (mockMode) {
-      return '📡 Mock Data (no ESP32)';
+      return 'Mock Data (no ESP32)';
     }
     if (connectionStatus === 'Connected') {
-      return '✅ Connected';
+      return 'Connected';
     }
     if (connectionStatus === 'Connecting' || connectionStatus === 'Reconnecting') {
-      return '⏳ Connecting';
+      return 'Connecting';
     }
-    return '❌ Disconnected';
+    return 'Disconnected';
   }, [connectionStatus, mockMode]);
 
   return (

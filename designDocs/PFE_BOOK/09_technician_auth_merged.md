@@ -80,6 +80,6 @@ The previous auth flow was generic and not practical for in-factory operators. A
 
 - Backend auth: `backend/app/routers/auth.py`
 - Frontend auth page: `frontend/src/pages/LoginPage.jsx`
-- Auth context wiring: `frontend/src/AuthContext.jsx`
+- Auth context wiring: `frontend/src/context/AuthContext.jsx`
 - Tests: `backend/tests/test_api_smoke.py`
-- Migration: `backend/alembic/versions/002_add_technician_auth_columns.py`
+- Migration: `backend/alembic/versions/002_add_user_account_columns.py`

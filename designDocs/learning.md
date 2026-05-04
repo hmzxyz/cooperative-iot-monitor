@@ -294,7 +294,7 @@ We traced how the **Sensor Alert System** evolved from sprint requirement → co
 | `ab6abac` | 2026-03-15 | update the sprints | `designDocs/01_SimulatorImplementation/sprint.md` |
 | `d6a998d` | 2026-03-20 | sprint 05 06 | `backend/app/models/sensor_reading.py` |
 | `ce62e6f` | 2026-03-22 | Updated sensors.db file | `backend/sensors.db` |
-| `2cce437` | 2026-03-25 | login in frontend+backend fix | `backend/app/auth.py`, `frontend/src/AuthContext.jsx` |
+| `2cce437` | 2026-03-25 | login in frontend+backend fix | `backend/app/auth.py`, `frontend/src/context/AuthContext.jsx` |
 
 ### Code Implementation Trace
 1. **Sprint Goal**: Add alert thresholds for temperature sensors.

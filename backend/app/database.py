@@ -24,7 +24,7 @@ def init_db():
 
 
 def _ensure_sqlite_user_columns():
-    """Backfill missing auth columns for local SQLite databases created before Sprint 09."""
+    """Backfill auth columns for older local SQLite databases."""
     if not DATABASE_URL.startswith("sqlite"):
         return
 

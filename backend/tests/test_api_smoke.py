@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 
 import pytest
@@ -7,6 +8,7 @@ from app.models.sensor_reading import SensorReading
 from app.models.user import User
 from app.routers import auth as auth_router
 from app.routers.auth import PasswordResetRequest, RegisterRequest
+from app.routers.prediction_service import PredictFailureRequest, get_sensor_summary, predict_failure
 from app.routers.sensors import latest_readings, list_devices, list_readings
 
 
@@ -156,3 +158,31 @@ def test_sensors_latest_list_and_devices(db_session):
 
     devices = list_devices(db=db_session, _=user)
     assert "dev-001" in devices
+
+
+def test_prediction_routes_use_persisted_sensor_readings(db_session):
+    db_session.add_all(
+        [
+            SensorReading(
+                device_id="dev-001",
+                sensor_id="temperature",
+                payload={"value": 23.5 + index},
+                timestamp=datetime.now(timezone.utc),
+            )
+            for index in range(12)
+        ]
+    )
+    db_session.commit()
+
+    prediction = asyncio.run(
+        predict_failure(
+            PredictFailureRequest(sensor_id="temperature", hours=24),
+            db_session,
+        )
+    )
+    summary = asyncio.run(get_sensor_summary(db_session))
+
+    assert prediction.sensor_id == "temperature"
+    assert prediction.predicted_status in {"nominal", "warning", "critical"}
+    assert summary.total_devices == 1
+    assert summary.total_readings == 12

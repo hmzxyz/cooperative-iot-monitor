@@ -1,7 +1,6 @@
 import usePrediction from '../usePrediction'
 import ReportCard from './ReportCard'
 import FailurePredictionPanel from './FailurePredictionPanel'
-import SprintTrackingBoard from './SprintTrackingBoard'
 
 /**
  * Alerts Sidebar Component
@@ -111,10 +110,6 @@ export default function AlertsSidebar({ connectionStatus, mockMode, lastUpdated 
         )}
       </div>
 
-      <div className="sidebar-section">
-        <h3>Sprint Health</h3>
-        <SprintTrackingBoard />
-      </div>
     </aside>
   )
 }

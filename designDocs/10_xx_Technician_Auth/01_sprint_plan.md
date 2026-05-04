@@ -24,7 +24,6 @@
 - **AlertsSidebar**: Real-time alerts with severity levels
 - **ReportCard**: System statistics dashboard
 - **FailurePredictionPanel**: Per-sensor AI status badges
-- **SprintTrackingBoard**: Task management interface
 
 ## Data Pipeline
 ```

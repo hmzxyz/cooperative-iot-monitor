@@ -19,32 +19,23 @@ float currentWeight = 5.0;
 bool draining = false;
 
 void connectWiFi() {
-  Serial.print("Connecting to WiFi");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
   }
-  Serial.println("\nWiFi connected");
 }
 
 void connectMQTT() {
   while (!mqttClient.connected()) {
-    Serial.print("Connecting to MQTT...");
     char clientId[64];
     snprintf(clientId, sizeof(clientId), "%s-client", DEVICE_ID);
-    if (mqttClient.connect(clientId)) {
-      Serial.println("connected");
-    } else {
-      Serial.print("failed rc=");
-      Serial.println(mqttClient.state());
+    if (!mqttClient.connect(clientId)) {
       delay(2000);
     }
   }
 }
 
 void setup() {
-  Serial.begin(115200);
   randomSeed(esp_random());
   snprintf(topicWeight, sizeof(topicWeight), "cooperative/device/%s/sensor/weight", DEVICE_ID);
   snprintf(topicFlow, sizeof(topicFlow), "cooperative/device/%s/sensor/flow", DEVICE_ID);
@@ -89,7 +80,4 @@ void loop() {
   mqttClient.publish(topicWeight, payload);
   dtostrf(flow, 0, 2, payload);
   mqttClient.publish(topicFlow, payload);
-
-  Serial.printf("Published: weight=%.2fkg flow=%.2fL/min state=%s\n",
-                currentWeight, flow, draining ? "drain" : "fill");
 }
