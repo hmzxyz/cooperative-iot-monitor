@@ -8,7 +8,7 @@ from app.models.sensor_reading import SensorReading
 from app.models.user import User
 from app.routers import auth as auth_router
 from app.routers.auth import PasswordResetRequest, RegisterRequest
-from app.routers.prediction_service import PredictFailureRequest, get_sensor_summary, predict_failure
+from app.routers.prediction_service import PredictFailureRequest, get_ai_analytics, get_sensor_summary, predict_failure
 from app.routers.sensors import latest_readings, list_devices, list_readings
 
 
@@ -181,8 +181,13 @@ def test_prediction_routes_use_persisted_sensor_readings(db_session):
         )
     )
     summary = asyncio.run(get_sensor_summary(db_session))
+    analytics = asyncio.run(get_ai_analytics(db_session))
 
     assert prediction.sensor_id == "temperature"
     assert prediction.predicted_status in {"nominal", "warning", "critical"}
     assert summary.total_devices == 1
     assert summary.total_readings == 12
+    assert analytics.model_name == "LinearTrendAnomalyModel v1"
+    assert analytics.status in {"nominal", "warning", "critical", "learning"}
+    assert analytics.recommendations
+    assert any(sensor.sensor_id == "temperature" for sensor in analytics.sensors)

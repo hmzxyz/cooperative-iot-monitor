@@ -9,7 +9,7 @@ This repository is a proof-of-concept for cooperative production monitoring usin
 ### Components
 
 - `backend/` — FastAPI API with JWT auth, MQTT ingestion, SQLite local storage, and PostgreSQL support.
-- `frontend/` — React + Vite dashboard with login, live MQTT cards, and history charts.
+- `frontend/` — React + Vite dashboard with login, live MQTT cards, AI technician recommendations, and history charts.
 - `esp32-simulators/` — Node.js simulator that publishes realistic multi-device sensor streams.
 - `esp32-firmware/` — ESP32 firmware profiles and upload notes.
 - `designDocs/` — architecture notes, implementation history, and PFE reference material.
@@ -44,6 +44,7 @@ This repository is a proof-of-concept for cooperative production monitoring usin
 - MQTT broker setup guidance is in `designDocs/00_Inception/notes/MQTT.md`.
 - Backend uses SQLite by default (`backend/sensors.db`).
 - Backend migrations include account role and recovery columns (`backend/alembic/versions/002_add_user_account_columns.py`).
+- AI analytics are served by `GET /api/predict/analytics` using a simple trend and anomaly model.
 - Active topic contract:
   - `cooperative/device/{device_id}/sensor/{sensor_id}`
   - numeric payloads for `temperature`, `humidity`, `weight`, `flow`

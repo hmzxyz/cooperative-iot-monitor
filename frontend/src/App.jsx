@@ -173,14 +173,15 @@ function Dashboard() {
           connectionStatus={connectionStatus}
           mockMode={mockMode}
           lastUpdated={lastUpdated}
+          sensorData={sensorData}
         />
         <div className="main-content">
           <header className="hero-panel">
         <div>
           <p className="eyebrow">Cooperative IoT Monitor</p>
-          <h1>Live Sensor Dashboard</h1>
+          <h1>AI-Assisted Sensor Dashboard</h1>
           <p className="hero-panel__intro">
-            MQTT over WebSocket with fallback mock data. The dashboard updates automatically and switches to live values when real messages arrive.
+            Live production readings with AI recommendations for what technicians should check next.
           </p>
         </div>
         <div className="hero-panel__status-row">
@@ -199,7 +200,7 @@ function Dashboard() {
 
       <section className="control-panel">
         <div className="control-panel__item">
-          <label htmlFor="brokerUrl">MQTT Broker</label>
+          <label htmlFor="brokerUrl">Data Source</label>
           <div className="broker-input-row">
             <input
               id="brokerUrl"
@@ -212,7 +213,7 @@ function Dashboard() {
               Connect
             </button>
           </div>
-          <p className="control-panel__meta">Current broker</p>
+          <p className="control-panel__meta">Current connection endpoint</p>
           <p>{brokerUrl}</p>
         </div>
         <div className="control-panel__item">
@@ -238,7 +239,7 @@ function Dashboard() {
 
       <footer className="footer-note">
         <p>
-          When live MQTT is unavailable, the dashboard falls back to backend-persisted readings and smooth simulated values. Live MQTT data always takes priority.
+          When hardware is offline, the dashboard keeps a safe simulated view active until live sensor data returns.
         </p>
       </footer>
     </div>

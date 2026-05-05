@@ -1,6 +1,6 @@
 # Backend Service
 
-FastAPI API for authentication, sensor history, and MQTT ingestion.
+FastAPI API for authentication, sensor history, MQTT ingestion, and AI analytics.
 
 ## Run Locally (SQLite)
 
@@ -11,6 +11,7 @@ cd backend
 
 - Default DB: `backend/sensors.db`
 - On startup, local SQLite schema is auto-created and missing auth columns are backfilled.
+- `GET /api/predict/analytics` returns technician-focused risk scoring and recommendations.
 
 ## Run with Docker (PostgreSQL)
 

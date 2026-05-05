@@ -73,14 +73,11 @@ case "$RUN_MOSQUITTO" in
 esac
 
 echo "[2/4] Starting backend..."
-if [ ! -x "$ROOT_DIR/backend/.venv-test/bin/python" ]; then
-  python3 -m venv "$ROOT_DIR/backend/.venv-test"
-  "$ROOT_DIR/backend/.venv-test/bin/pip" install -r "$ROOT_DIR/backend/requirements.txt"
-fi
 (
   cd "$ROOT_DIR/backend"
-  .venv-test/bin/alembic upgrade head
-  .venv-test/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+  python3 -m pip install -r requirements.txt 2>/dev/null || python -m pip install -r requirements.txt
+  python3 -m alembic upgrade head
+  python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ) >"$RUN_DIR/backend.log" 2>&1 &
 BACKEND_PID="$!"
 PIDS+=("$BACKEND_PID")
