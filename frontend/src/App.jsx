@@ -2,17 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import MqttManager from './MqttManager.js';
 import SensorCard from './components/SensorCard.jsx';
 import HistoryChart from './components/HistoryChart.jsx';
-import AlertsSidebar from './components/AlertsSidebar.jsx';
 import { DEFAULT_BROKER_URL, MQTT_TOPICS, SENSOR_CONFIGS } from './config.js';
 import { apiFetch } from './api.js';
 import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage.jsx';
 
 const SENSOR_RANGES = {
-  temperature: { min: 18, max: 35, initial: 24, alpha: 0.3, maxDelta: 0.6 },
-  humidity: { min: 40, max: 90, initial: 60, alpha: 0.28, maxDelta: 1.4 },
-  weight: { min: 0, max: 50, initial: 10, alpha: 0.25, maxDelta: 1.8 },
-  flow: { min: 0, max: 10, initial: 2, alpha: 0.3, maxDelta: 0.5 },
+  temperature: { min: 18, max: 100, initial: 26, alpha: 0.28, maxDelta: 0.9 },
+  vibration: { min: 0, max: 10, initial: 1.2, alpha: 0.32, maxDelta: 0.45 },
+  current_amp: { min: 0, max: 25, initial: 6.5, alpha: 0.25, maxDelta: 0.8 },
+  weight_kg: { min: 0, max: 600, initial: 220, alpha: 0.22, maxDelta: 6 },
+  level_percent: { min: 0, max: 100, initial: 40, alpha: 0.22, maxDelta: 4 },
 };
 
 const SENSOR_KEYS = Object.keys(SENSOR_CONFIGS);
@@ -58,9 +58,11 @@ function Dashboard() {
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   const [mockMode, setMockMode] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
-  const [brokerUrl, setBrokerUrl] = useState(DEFAULT_BROKER_URL);
-  const [brokerUrlInput, setBrokerUrlInput] = useState(DEFAULT_BROKER_URL);
+  const [brokerUrl] = useState(DEFAULT_BROKER_URL);
   const mqttManagerRef = useRef(null);
+  const [devices, setDevices] = useState([]);
+  const [selectedDevice, setSelectedDevice] = useState('');
+  const [devicesError, setDevicesError] = useState('');
 
   const sensorCards = useMemo(
     () =>
@@ -115,13 +117,32 @@ function Dashboard() {
       return;
     }
 
+    const loadDevices = async () => {
+      try {
+        const list = await apiFetch('/sensors/devices', token);
+        const cleaned = Array.isArray(list) ? list.filter((id) => typeof id === 'string' && id.trim()) : [];
+        setDevices(cleaned);
+        setDevicesError('');
+        if (!selectedDevice && cleaned.length > 0) {
+          setSelectedDevice(cleaned[0]);
+        }
+      } catch (err) {
+        if (err.message === 'unauthorized') {
+          logout();
+          return;
+        }
+        setDevicesError('Could not load machine list yet.');
+      }
+    };
+
     const hydrateLatestReadings = async () => {
       // Prefer live MQTT when connected; otherwise hydrate from persisted backend data.
       if (!mockMode && connectionStatus === 'Connected') {
         return;
       }
       try {
-        const latest = await apiFetch('/sensors/latest', token);
+        const deviceQuery = selectedDevice ? `?device_id=${encodeURIComponent(selectedDevice)}` : '';
+        const latest = await apiFetch(`/sensors/latest${deviceQuery}`, token);
         SENSOR_KEYS.forEach((sensorKey) => {
           const value = Number(latest?.[sensorKey]?.payload?.value);
           if (Number.isFinite(value)) {
@@ -135,111 +156,99 @@ function Dashboard() {
       }
     };
 
+    loadDevices();
     hydrateLatestReadings();
     const intervalId = setInterval(hydrateLatestReadings, 12_000);
     return () => clearInterval(intervalId);
-  }, [token, mockMode, connectionStatus, logout, applySensorUpdate]);
+  }, [token, mockMode, connectionStatus, logout, applySensorUpdate, selectedDevice]);
 
-  const toggleMode = () => {
-    const nextMockMode = !mockMode;
-    mqttManagerRef.current.setForceMock(nextMockMode);
-    setMockMode(nextMockMode);
-  };
-
-  const handleBrokerConnect = () => {
-    setBrokerUrl(brokerUrlInput);
-    if (mqttManagerRef.current) {
-      mqttManagerRef.current.updateBrokerUrl(brokerUrlInput);
-    }
-  };
-
-  const statusLabel = useMemo(() => {
-    if (mockMode) {
-      return 'Mock Data (no ESP32)';
-    }
-    if (connectionStatus === 'Connected') {
-      return 'Connected';
-    }
-    if (connectionStatus === 'Connecting' || connectionStatus === 'Reconnecting') {
-      return 'Connecting';
-    }
+  const connectionLabel = useMemo(() => {
+    if (mockMode) return 'Offline simulation';
+    if (connectionStatus === 'Connected') return 'Live MQTT connected';
+    if (connectionStatus === 'Connecting' || connectionStatus === 'Reconnecting') return 'Connecting';
     return 'Disconnected';
   }, [connectionStatus, mockMode]);
 
   return (
     <div className="app-shell">
       <div className="dashboard-wrapper">
-        <AlertsSidebar
-          connectionStatus={connectionStatus}
-          mockMode={mockMode}
-          lastUpdated={lastUpdated}
-          sensorData={sensorData}
-        />
         <div className="main-content">
           <header className="hero-panel">
         <div>
           <p className="eyebrow">Cooperative IoT Monitor</p>
-          <h1>AI-Assisted Sensor Dashboard</h1>
+          <h1>Realtime Sensor Dashboard</h1>
           <p className="hero-panel__intro">
-            Live production readings with AI recommendations for what technicians should check next.
+            Live machine readings with a safe offline fallback when hardware is unavailable.
           </p>
         </div>
         <div className="hero-panel__status-row">
           <div className="hero-panel__status-group">
-            <div className="status-badge">{statusLabel}</div>
+            <p className="user-badge">{connectionLabel}</p>
             <p className="user-badge">User: {username || 'unknown'}</p>
           </div>
-          <button className="primary-button" type="button" onClick={toggleMode}>
-            {mockMode ? 'Switch to Live MQTT Mode' : 'Switch to Mock Mode'}
-          </button>
           <button className="secondary-button" type="button" onClick={logout}>
             Sign Out
           </button>
         </div>
       </header>
 
-      <section className="control-panel">
-        <div className="control-panel__item">
-          <label htmlFor="brokerUrl">Data Source</label>
-          <div className="broker-input-row">
-            <input
-              id="brokerUrl"
-              type="text"
-              value={brokerUrlInput}
-              onChange={(event) => setBrokerUrlInput(event.target.value)}
-              placeholder="ws://localhost:9001"
-            />
-            <button className="secondary-button" type="button" onClick={handleBrokerConnect}>
-              Connect
-            </button>
+      <section className="dashboard-layout">
+        <aside className="machine-section">
+          <div className="machine-section__header">
+            <div>
+              <p className="section-kicker">Machines</p>
+              <h2 className="machine-section__title">Select a machine</h2>
+            </div>
+            <p className="machine-section__meta">Updated {lastUpdated.toLocaleTimeString()}</p>
           </div>
-          <p className="control-panel__meta">Current connection endpoint</p>
-          <p>{brokerUrl}</p>
-        </div>
-        <div className="control-panel__item">
-          <p className="control-panel__meta">Last update</p>
-          <p>{lastUpdated.toLocaleTimeString()}</p>
-        </div>
-      </section>
 
-      <main className="grid-panel">
-        {sensorCards.map(({ key, label, value, unit, description }) => (
-          <SensorCard key={key} label={label} value={value} unit={unit} description={description} />
-        ))}
-      </main>
+          <div className="machine-grid" role="list">
+            {devicesError && <div className="machine-empty">{devicesError}</div>}
+            {!devicesError && devices.length === 0 && (
+              <div className="machine-empty">No machines yet — start Node-RED simulation to populate the database.</div>
+            )}
+            {devices.map((id) => (
+              <button
+                key={id}
+                type="button"
+                role="listitem"
+                className={`machine-card${selectedDevice === id ? ' machine-card--active' : ''}`}
+                onClick={() => setSelectedDevice(id)}
+              >
+                <p className="machine-card__name">{id}</p>
+                <p className="machine-card__hint">Latest readings + history</p>
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <main className="sensor-section">
+          <div className="sensor-section__header">
+            <div>
+              <p className="section-kicker">Overview</p>
+              <h2 className="sensor-section__title">{selectedDevice || 'All machines'}</h2>
+            </div>
+          </div>
+          <div className="grid-panel">
+            {sensorCards.map(({ key, label, value, unit, description }) => (
+              <SensorCard key={key} label={label} value={value} unit={unit} description={description} />
+            ))}
+          </div>
+        </main>
+      </section>
 
       <section className="charts-panel">
         <h2 className="charts-panel__heading">History (last 40 readings)</h2>
         <div className="charts-grid">
           {Object.entries(SENSOR_CONFIGS).map(([key, { label, unit }]) => (
-            <HistoryChart key={key} sensorId={key} label={label} unit={unit} />
+            <HistoryChart key={key} sensorId={key} label={label} unit={unit} deviceId={selectedDevice || null} />
           ))}
         </div>
       </section>
 
       <footer className="footer-note">
         <p>
-          When hardware is offline, the dashboard keeps a safe simulated view active until live sensor data returns.
+          Backend hydration uses persisted readings from `iot_monitor.sensor_readings`.
         </p>
       </footer>
     </div>

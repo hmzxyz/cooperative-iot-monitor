@@ -6,9 +6,10 @@ export const DEVICE_TOPIC_WILDCARD = 'cooperative/device/+/sensor/+';
 // Known sensor types (used for validation and mock data keys)
 export const MQTT_TOPICS = {
   temperature: 'cooperative/device/+/sensor/temperature',
-  humidity:    'cooperative/device/+/sensor/humidity',
-  weight:      'cooperative/device/+/sensor/weight',
-  flow:        'cooperative/device/+/sensor/flow',
+  vibration: 'cooperative/device/+/sensor/vibration',
+  current_amp: 'cooperative/device/+/sensor/current_amp',
+  weight_kg: 'cooperative/device/+/sensor/weight_kg',
+  level_percent: 'cooperative/device/+/sensor/level_percent',
 };
 
 /**
@@ -29,7 +30,8 @@ export const MOCK_INTERVAL_MS = 4000;
 export const MQTT_STALE_TIMEOUT_MS = 12000;
 export const SENSOR_CONFIGS = {
   temperature: { label: 'Temperature', unit: 'C' },
-  humidity:    { label: 'Humidity', unit: '%' },
-  weight:      { label: 'Weight', unit: 'kg' },
-  flow:        { label: 'Flow', unit: 'L/min' },
+  vibration: { label: 'Vibration', unit: 'g' },
+  current_amp: { label: 'Current', unit: 'A' },
+  weight_kg: { label: 'Weight', unit: 'kg' },
+  level_percent: { label: 'Level', unit: '%' },
 };

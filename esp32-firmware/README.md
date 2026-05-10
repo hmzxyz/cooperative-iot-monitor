@@ -6,10 +6,10 @@ Each sketch publishes sensor data to MQTT topics expected by the backend:
 
 ## Available Sketches
 
-- `esp32-firmware.ino`: full profile (temperature, humidity, weight, flow).
-- `esp-32-firmware-humidity-temperature.ino`: temp/humidity profile.
-- `exp-32-firmware-balance.ino`: weight/flow profile.
-- `esp-32-kanban.ino`: production-cycle style profile that still publishes all 4 sensor keys.
+- `esp32-firmware.ino`: full profile.
+- `esp-32-firmware-humidity-temperature.ino`: legacy temp/humidity profile.
+- `exp-32-firmware-balance.ino`: legacy weight/flow profile.
+- `esp-32-kanban.ino`: production-cycle style profile.
 - `esp32-firmware-random-data.ino`: legacy random-data profile.
 
 ## Before Upload
@@ -24,4 +24,4 @@ In each sketch, set:
 ## Notes
 
 - Use unique `DEVICE_ID` per board.
-- Backend and frontend expect sensor keys: `temperature`, `humidity`, `weight`, `flow`.
+- Backend and frontend expect sensor keys: `temperature`, `vibration`, `current_amp`, `weight_kg`, `level_percent`.

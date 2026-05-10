@@ -1,6 +1,6 @@
 # ESP32 Simulator
 
-Node.js simulator that publishes realistic multi-device sensor values to MQTT.
+Node.js simulator that publishes machine-style sensor values to MQTT.
 
 ## Run
 
@@ -15,6 +15,7 @@ Environment variables:
 
 Topics published:
 - `cooperative/device/{device_id}/sensor/temperature`
-- `cooperative/device/{device_id}/sensor/humidity`
-- `cooperative/device/{device_id}/sensor/weight`
-- `cooperative/device/{device_id}/sensor/flow`
+- `cooperative/device/{device_id}/sensor/vibration`
+- `cooperative/device/{device_id}/sensor/current_amp`
+- `cooperative/device/{device_id}/sensor/weight_kg`
+- `cooperative/device/{device_id}/sensor/level_percent`

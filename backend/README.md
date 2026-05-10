@@ -1,31 +1,40 @@
 # Backend Service
 
-FastAPI API for authentication, sensor history, MQTT ingestion, and AI analytics.
+FastAPI API for authentication, bundle-style sensor history, and persisted dashboard hydration.
 
-## Run Locally (SQLite)
-
-```bash
-cd backend
-.venv-test/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-- Default DB: `backend/sensors.db`
-- On startup, local SQLite schema is auto-created and missing auth columns are backfilled.
-- `GET /api/predict/analytics` returns technician-focused risk scoring and recommendations.
-
-## Run with Docker (PostgreSQL)
+## Docker First
 
 ```bash
-docker compose up --build backend postgres mosquitto
+docker-compose up -d --build backend
 ```
 
-- Container startup runs: `alembic upgrade head && uvicorn ...`
-- Account role and recovery columns are added by Alembic revision `002`.
+The backend container runs Alembic on startup and then serves Uvicorn on port `8000`.
+
+## Data Contract
+
+The backend expects `sensor_readings` rows populated by Node-RED:
+
+- `device_id`
+- `sensor_id` as the machine type
+- `tick`
+- `status`
+- `anomaly_score`
+- `decision_reason` JSONB
+- `sensors` JSONB
+- `timestamp`
 
 ## Useful Commands
 
 ```bash
 cd backend
-.venv-test/bin/pytest -q
-alembic upgrade head
+uv sync
+uv run pytest
+uv run alembic upgrade head
 ```
+
+## Runtime Endpoints
+
+- `GET /health`
+- `GET /api/sensors/devices`
+- `GET /api/sensors/latest`
+- `GET /api/predict/analytics`

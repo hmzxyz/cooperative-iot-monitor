@@ -6,22 +6,47 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('auth_token'));
+  const [email, setEmail] = useState(() => localStorage.getItem('auth_email'));
   const [username, setUsername] = useState(() => localStorage.getItem('auth_username'));
 
   const parseApiError = useCallback(async (res, fallbackMessage) => {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || fallbackMessage);
+    const { detail } = err || {};
+    if (Array.isArray(detail)) {
+      const message = detail
+        .map((item) => {
+          if (!item) return null;
+          if (typeof item === 'string') return item;
+          const loc = Array.isArray(item.loc) ? item.loc.slice(1).join('.') : null;
+          const msg = item.msg || item.message || null;
+          if (loc && msg) return `${loc}: ${msg}`;
+          return msg || null;
+        })
+        .filter(Boolean)
+        .join(' • ');
+      throw new Error(message || fallbackMessage);
+    }
+    if (typeof detail === 'string' && detail.trim()) {
+      throw new Error(detail);
+    }
+    throw new Error(fallbackMessage);
   }, []);
 
-  const setSession = useCallback((nextToken, nextUsername) => {
+  const setSession = useCallback((nextToken, nextEmail, nextUsername) => {
     localStorage.setItem('auth_token', nextToken);
-    localStorage.setItem('auth_username', nextUsername);
+    localStorage.setItem('auth_email', nextEmail);
+    if (nextUsername) {
+      localStorage.setItem('auth_username', nextUsername);
+    } else {
+      localStorage.removeItem('auth_username');
+    }
     setToken(nextToken);
-    setUsername(nextUsername);
+    setEmail(nextEmail);
+    setUsername(nextUsername || null);
   }, []);
 
-  const login = useCallback(async (nextUsername, password) => {
-    const body = new URLSearchParams({ username: nextUsername, password });
+  const login = useCallback(async (nextEmail, password) => {
+    const body = new URLSearchParams({ username: nextEmail, password });
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -30,19 +55,21 @@ export function AuthProvider({ children }) {
     if (!res.ok) {
       await parseApiError(res, 'Login failed');
     }
-    const { access_token } = await res.json();
-    setSession(access_token, nextUsername);
+    const { access_token, user } = await res.json();
+    setSession(access_token, user.email, user.username);
   }, [parseApiError, setSession]);
 
   const registerTechnician = useCallback(async ({
-    username: nextUsername,
+    email: nextEmail,
+    username,
     password,
     phone,
     securityQuestion,
     securityAnswer,
   }) => {
     const payload = {
-      username: nextUsername,
+      email: nextEmail,
+      username,
       password,
       role: 'technician',
       phone: phone || undefined,
@@ -62,9 +89,9 @@ export function AuthProvider({ children }) {
     return res.json();
   }, [parseApiError]);
 
-  const getPasswordResetQuestion = useCallback(async (nextUsername) => {
-    const usernameQuery = encodeURIComponent(nextUsername);
-    const res = await fetch(`${API_BASE}/auth/password-reset/question?username=${usernameQuery}`);
+  const getPasswordResetQuestion = useCallback(async (nextEmail) => {
+    const emailQuery = encodeURIComponent(nextEmail);
+    const res = await fetch(`${API_BASE}/auth/password-reset/question?email=${emailQuery}`);
     if (!res.ok) {
       await parseApiError(res, 'Could not load security question');
     }
@@ -72,7 +99,7 @@ export function AuthProvider({ children }) {
   }, [parseApiError]);
 
   const resetPassword = useCallback(async ({
-    username: nextUsername,
+    email: nextEmail,
     securityAnswer,
     newPassword,
   }) => {
@@ -80,7 +107,7 @@ export function AuthProvider({ children }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        username: nextUsername,
+        email: nextEmail,
         security_answer: securityAnswer,
         new_password: newPassword,
       }),
@@ -94,8 +121,10 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_email');
     localStorage.removeItem('auth_username');
     setToken(null);
+    setEmail(null);
     setUsername(null);
   }, []);
 
@@ -103,6 +132,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         token,
+        email,
         username,
         login,
         registerTechnician,

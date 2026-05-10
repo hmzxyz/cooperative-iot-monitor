@@ -27,9 +27,9 @@ function toChartPoints(readings) {
     .join(' ');
 }
 
-export default function HistoryChart({ sensorId, label, unit }) {
+export default function HistoryChart({ sensorId, label, unit, deviceId }) {
   const { token } = useAuth();
-  const { readings, error } = useSensorHistory(sensorId, token);
+  const { readings, error } = useSensorHistory(sensorId, token, deviceId);
   const points = useMemo(() => toChartPoints(readings), [readings]);
   const latest = readings.length > 0 ? readings[readings.length - 1] : null;
 

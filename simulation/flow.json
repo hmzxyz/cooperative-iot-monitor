@@ -1,0 +1,246 @@
+[
+    {
+        "id": "500d924d0823096e",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "3ddefefefc8e5a81",
+        "type": "tab",
+        "label": "Master Simulation",
+        "disabled": false
+    },
+    {
+        "id": "1d9bb3f36fb36d3b",
+        "type": "postgreSQLConfig",
+        "name": "",
+        "host": "postgres-1",
+        "hostFieldType": "str",
+        "port": 5432,
+        "portFieldType": "num",
+        "database": "iot_monitor",
+        "databaseFieldType": "str",
+        "ssl": "false",
+        "sslFieldType": "bool",
+        "applicationName": "",
+        "applicationNameType": "str",
+        "max": 10,
+        "maxFieldType": "num",
+        "idle": 1000,
+        "idleFieldType": "num",
+        "connectionTimeout": 10000,
+        "connectionTimeoutFieldType": "num",
+        "user": "iot_user",
+        "userFieldType": "str",
+        "password": "iotpassword",
+        "passwordFieldType": "str"
+    },
+    {
+        "id": "b57a248562f11f8b",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-postgresql": "0.15.4"
+        }
+    },
+    {
+        "id": "50840c75a6f16792",
+        "type": "mqtt-broker",
+        "name": "Local MQTT",
+        "broker": "mosquitto-1",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 15,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "81ac9abdba94b94d",
+        "type": "inject",
+        "z": "3ddefefefc8e5a81",
+        "name": "Tick 1s",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "30",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "9b3a4fabcdb1b506"
+            ]
+        ]
+    },
+    {
+        "id": "9b3a4fabcdb1b506",
+        "type": "function",
+        "z": "3ddefefefc8e5a81",
+        "name": "Sensor Simulator",
+        "func": "// === SENSOR SIMULATOR ===\n// Node-RED Function node\n// Output: [ [msg1, msg2, msg3] ]\n\nconst machines = {\n    Hopper_01: {\n        type: \"Hopper\",\n        base: { temp: 25.5, vib: 1.1, curr: 6.8, weight: 430 },\n        normal:  { temp: [24.0, 28.0], vib: [0.9, 1.8], curr: [6.0, 8.0], weight: [380, 500] },\n        warning: { temp: [28.0, 55.0], vib: [2.0, 4.5], curr: [7.5, 12.0], weight: [50, 350] },\n        critical:{ temp: [45.0, 90.0], vib: [3.5, 7.0], curr: [10.0, 16.0], weight: [0, 50] }\n    },\n    Conveyor_01: {\n        type: \"Conveyor\",\n        base: { temp: 25.2, vib: 0.9, curr: 5.2, weight: 18 },\n        normal:  { temp: [24.0, 27.0], vib: [0.7, 1.5], curr: [4.8, 6.2], weight: [0, 40] },\n        warning: { temp: [27.0, 45.0], vib: [2.0, 3.8], curr: [7.0, 10.5], weight: [0, 20] },\n        critical:{ temp: [40.0, 80.0], vib: [3.5, 6.5], curr: [10.0, 15.0], weight: [0, 5] }\n    },\n    Mixer_01: {\n        type: \"Mixer\",\n        base: { temp: 28.5, vib: 1.9, curr: 6.5, weight: 140 },\n        normal:  { temp: [27.0, 32.0], vib: [1.5, 2.5], curr: [6.0, 7.6], weight: [100, 220] },\n        warning: { temp: [32.0, 60.0], vib: [2.5, 4.5], curr: [8.0, 12.0], weight: [200, 360] },\n        critical:{ temp: [45.0, 95.0], vib: [3.5, 7.5], curr: [10.5, 17.0], weight: [300, 500] }\n    }\n};\n\nfunction clamp(v, min, max) {\n    return Math.max(min, Math.min(max, v));\n}\n\nfunction rand(min, max) {\n    return min + Math.random() * (max - min);\n}\n\nfunction rint(min, max) {\n    return Math.floor(rand(min, max + 1));\n}\n\nfunction evolve(current, target, drift, noise, min, max) {\n    current += (target - current) * drift;\n    current += rand(-noise, noise);\n    return clamp(current, min, max);\n}\n\nlet state = context.get(\"state\") || {};\nlet tick = (context.get(\"tick\") || 0) + 1;\nconst now = new Date().toISOString();\nconst out = [];\n\nfor (const [id, def] of Object.entries(machines)) {\n    if (!state[id]) {\n        state[id] = {\n            temp: def.base.temp + rand(-0.4, 0.4),\n            vib: def.base.vib + rand(-0.1, 0.1),\n            curr: def.base.curr + rand(-0.2, 0.2),\n            weight: def.base.weight + rand(-5, 5),\n            mode: \"RUNNING\",\n            modeRemaining: rint(16, 26)\n        };\n    }\n\n    const s = state[id];\n\n    // lifecycle\n    if (s.modeRemaining <= 0) {\n        if (s.mode === \"RUNNING\") {\n            s.mode = \"WARNING\";\n            s.modeRemaining = rint(4, 8);\n        } else if (s.mode === \"WARNING\") {\n            if (Math.random() < 0.35) {\n                s.mode = \"CRITICAL\";\n                s.modeRemaining = rint(2, 4);\n            } else {\n                s.mode = \"RUNNING\";\n                s.modeRemaining = rint(10, 20);\n            }\n        } else if (s.mode === \"CRITICAL\") {\n            s.mode = \"RUNNING\";\n            s.modeRemaining = rint(20, 35);\n            s.temp = def.base.temp + rand(-0.5, 0.5);\n            s.vib = def.base.vib + rand(-0.1, 0.1);\n            s.curr = def.base.curr + rand(-0.2, 0.2);\n        }\n    }\n\n    s.modeRemaining -= 1;\n\n    const key = s.mode === \"RUNNING\" ? \"normal\" : s.mode.toLowerCase();\n    const b = def[key];\n\n    s.temp = evolve(s.temp, rand(b.temp[0], b.temp[1]), 0.15, 0.45, 18, 100);\n    s.vib = evolve(s.vib, rand(b.vib[0], b.vib[1]), 0.20, 0.20, 0, 10);\n    s.curr = evolve(s.curr, rand(b.curr[0], b.curr[1]), 0.18, 0.25, 0, 25);\n    s.weight = evolve(s.weight, rand(b.weight[0], b.weight[1]), 0.14, 2.5, 0, 600);\n\n    // light isolated noise so it does not look like a sterile spreadsheet\n    if (Math.random() < 0.08) {\n        s.vib += rand(0.1, 0.4);\n    }\n\n    const level = id === \"Hopper_01\"\n        ? clamp((s.weight / 500) * 100, 0, 100)\n        : 0;\n\n    out.push({\n        payload: {\n            timestamp: now,\n            machine_id: id,\n            machine_type: def.type,\n            tick,\n            sensors: {\n                temperature: +s.temp.toFixed(2),\n                vibration: +s.vib.toFixed(2),\n                current_amp: +s.curr.toFixed(2),\n                weight_kg: +s.weight.toFixed(2),\n                level_percent: +level.toFixed(2)\n            },\n            status: s.mode,\n            mode_remaining: s.modeRemaining\n        }\n    });\n\n    state[id] = s;\n}\n\ncontext.set(\"state\", state);\ncontext.set(\"tick\", tick);\n\nreturn [out];",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 100,
+        "wires": [
+            [
+                "6d276cf6d9b36374"
+            ]
+        ]
+    },
+    {
+        "id": "6d276cf6d9b36374",
+        "type": "function",
+        "z": "3ddefefefc8e5a81",
+        "name": "Decision Logic",
+        "func": "// === DECISION LOGIC ===\n// Node-RED Function node\n// Input: msg.payload from simulator\n// Output: msg.payload with status + anomaly_score + decision_reason\n\nconst p = msg.payload || {};\nconst s = p.sensors || {};\nconst id = p.machine_id || \"UNKNOWN\";\n\nfunction n(v) {\n    const x = Number(v);\n    return Number.isFinite(x) ? x : null;\n}\n\nconst temp = n(s.temperature);\nconst vib = n(s.vibration);\nconst curr = n(s.current_amp);\nconst weight = n(s.weight_kg);\nconst level = n(s.level_percent);\n\nif ([temp, vib, curr, weight, level].some(v => v === null)) {\n    msg.payload = {\n        ...p,\n        status: \"SENSOR_ERROR\",\n        anomaly_score: 100,\n        decision_reason: [\"Invalid sensor data\"]\n    };\n    return msg;\n}\n\nlet score = 0;\nlet reasons = [];\n\n// continuous scoring\nif (vib > 1.5) {\n    const v = (vib - 1.5) * 2.2;\n    score += v;\n    reasons.push(`Vibration elevated (+${v.toFixed(2)})`);\n}\n\nif (curr > 6.5) {\n    const c = (curr - 6.5) * 1.8;\n    score += c;\n    reasons.push(`Current above baseline (+${c.toFixed(2)})`);\n}\n\nif (temp > 35) {\n    const t = (temp - 35) * 0.15;\n    score += t;\n    reasons.push(`Temperature rising (+${t.toFixed(2)})`);\n}\n\n// machine-specific rules\nif (id === \"Mixer_01\") {\n    if (vib > 2.8 && curr > 9) {\n        score += 3;\n        reasons.push(\"Mixer mechanical stress\");\n    }\n}\n\nif (id === \"Conveyor_01\") {\n    if (weight === 0 && vib > 2.5 && curr > 8) {\n        score += 3;\n        reasons.push(\"Dry-run risk\");\n    }\n}\n\nif (id === \"Hopper_01\") {\n    if (level > 95) {\n        score += 2;\n        reasons.push(\"Hopper near overflow\");\n    }\n    if (level < 5) {\n        score += 2;\n        reasons.push(\"Hopper near empty\");\n    }\n}\n\n// status thresholds\nlet status = \"RUNNING\";\n\nif (score >= 6) {\n    status = \"CRITICAL\";\n} else if (score >= 2.5) {\n    status = \"WARNING\";\n} else if (score > 0) {\n    status = \"WATCH\";\n}\n\nmsg.payload = {\n    ...p,\n    status,\n    anomaly_score: +score.toFixed(2),\n    decision_reason: reasons.length ? reasons : [\"No anomalies detected\"]\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 100,
+        "wires": [
+            [
+                "f5811d3f4c7064ae",
+                "f8b8018f83290dd2",
+                "27d040f3b9835124",
+                "a20dcfb5d4cd295c"
+            ]
+        ]
+    },
+    {
+        "id": "27d040f3b9835124",
+        "type": "json",
+        "z": "3ddefefefc8e5a81",
+        "name": "Format JSON",
+        "property": "payload",
+        "action": "",
+        "pretty": true,
+        "x": 920,
+        "y": 240,
+        "wires": [
+            [
+                "35ea295785342387"
+            ]
+        ]
+    },
+    {
+        "id": "35ea295785342387",
+        "type": "file",
+        "z": "3ddefefefc8e5a81",
+        "name": "Save Locally",
+        "filename": "data/simulation_data.json",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "utf8",
+        "x": 1190,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f5811d3f4c7064ae",
+        "type": "mqtt out",
+        "z": "3ddefefefc8e5a81",
+        "name": "",
+        "topic": "cooperative/device/simulator/status",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "50840c75a6f16792",
+        "x": 1140,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "f8b8018f83290dd2",
+        "type": "debug",
+        "z": "3ddefefefc8e5a81",
+        "name": "Monitor",
+        "active": true,
+        "complete": "payload",
+        "x": 920,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "8a11cfaba4a74405",
+        "type": "postgresql",
+        "z": "3ddefefefc8e5a81",
+        "name": "",
+        "query": "SELECT * FROM ;",
+        "postgreSQLConfig": "1d9bb3f36fb36d3b",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 830,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a20dcfb5d4cd295c",
+        "type": "function",
+        "z": "3ddefefefc8e5a81",
+        "name": "FORMAT SQL",
+        "func": "/**\n * FORMAT SQL NODE\n * Purpose: Map flat simulation data to specific PostgreSQL columns.\n */\nconst d = msg.payload;\n\nmsg.query = `\n    INSERT INTO sensor_readings (\n        device_id, \n        sensor_id, \n        tick, \n        status, \n        anomaly_score, \n        decision_reason, \n        sensors, \n        timestamp\n    ) \n    VALUES ($1, $2, $3, $4, $5, $6, $7, $8);\n`;\n\nmsg.params = [\n    d.machine_id,\n    d.machine_type,\n    d.tick,\n    d.status,\n    d.anomaly_score,\n    JSON.stringify(d.decision_reason), // Store reasons as JSONB array\n    JSON.stringify(d.sensors),         // Store sensor object as JSONB\n    d.timestamp\n];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 360,
+        "wires": [
+            [
+                "8a11cfaba4a74405"
+            ]
+        ]
+    }
+]

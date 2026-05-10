@@ -1,53 +1,40 @@
 import os
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from collections.abc import AsyncGenerator
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./sensors.db")
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-_connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=_connect_args)
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Runtime uses asyncpg. Alembic still uses a sync driver via env.py.
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://iot_user:iotpassword@postgres:5432/iot_monitor",
+)
 
 
-def init_db():
-    from app.models.sensor_reading import Base
-    Base.metadata.create_all(bind=engine)
-    _ensure_sqlite_user_columns()
+class Base(DeclarativeBase):
+    pass
 
 
-def _ensure_sqlite_user_columns():
-    """Backfill auth columns for older local SQLite databases."""
-    if not DATABASE_URL.startswith("sqlite"):
-        return
+def _make_engine() -> AsyncEngine:
+    echo = os.getenv("SQLALCHEMY_ECHO", "").strip().lower() in {"1", "true", "yes", "on"}
+    return create_async_engine(DATABASE_URL, echo=echo, pool_pre_ping=True)
 
-    required_columns = {
-        "role": "ALTER TABLE users ADD COLUMN role VARCHAR",
-        "security_question": "ALTER TABLE users ADD COLUMN security_question VARCHAR",
-        "security_answer_hash": "ALTER TABLE users ADD COLUMN security_answer_hash VARCHAR",
-        "phone": "ALTER TABLE users ADD COLUMN phone VARCHAR",
-        "last_login": "ALTER TABLE users ADD COLUMN last_login DATETIME",
-    }
 
-    with engine.begin() as connection:
-        users_table = connection.execute(
-            text("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
-        ).first()
-        if not users_table:
-            return
+engine = _make_engine()
+AsyncSessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+# Backwards-compatible import name used throughout the app.
+SessionLocal = AsyncSessionLocal
 
-        existing_columns = {
-            row[1] for row in connection.execute(text("PRAGMA table_info(users)")).fetchall()
-        }
-        for column_name, ddl in required_columns.items():
-            if column_name not in existing_columns:
-                connection.execute(text(ddl))
 
-        connection.execute(text("UPDATE users SET role = 'technician' WHERE role IS NULL"))
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        yield session
+
+
+async def init_db() -> None:
+    # Prefer Alembic in production; this is only for local dev convenience.
+    from app.models.sensor_reading import SensorReading  # noqa: F401
+    from app.models.user import User  # noqa: F401
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const EMPTY_SIGNUP = {
+  email: '',
   username: '',
   password: '',
   phone: '',
@@ -10,7 +11,7 @@ const EMPTY_SIGNUP = {
 };
 
 const EMPTY_RESET = {
-  username: '',
+  email: '',
   securityQuestion: '',
   securityAnswer: '',
   newPassword: '',
@@ -19,7 +20,8 @@ const EMPTY_RESET = {
 export default function LoginPage() {
   const { login, registerTechnician, getPasswordResetQuestion, resetPassword } = useAuth();
   const [view, setView] = useState('signin');
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [signupForm, setSignupForm] = useState(EMPTY_SIGNUP);
   const [resetForm, setResetForm] = useState(EMPTY_RESET);
   const [error, setError] = useState('');
@@ -41,7 +43,8 @@ export default function LoginPage() {
     setMessage('');
     setLoading(true);
     try {
-      await login(loginForm.username.trim(), loginForm.password);
+      await login(loginEmail.trim(), loginPassword);
+      setMessage('Logged in successfully');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -56,14 +59,15 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await registerTechnician({
+        email: signupForm.email.trim(),
         username: signupForm.username.trim(),
         password: signupForm.password,
         phone: signupForm.phone.trim(),
         securityQuestion: signupForm.securityQuestion.trim(),
         securityAnswer: signupForm.securityAnswer.trim(),
       });
-      setMessage('Technician account created. You can sign in now.');
-      setLoginForm({ username: signupForm.username.trim(), password: '' });
+      setMessage('Technician account created. Sign in now.');
+      setLoginEmail(signupForm.email.trim());
       setSignupForm(EMPTY_SIGNUP);
       setView('signin');
     } catch (err) {
@@ -74,9 +78,9 @@ export default function LoginPage() {
   };
 
   const handleLoadSecurityQuestion = async () => {
-    const normalizedUsername = resetForm.username.trim();
-    if (!normalizedUsername) {
-      setError('Enter your username first.');
+    const normalizedEmail = resetForm.email.trim();
+    if (!normalizedEmail) {
+      setError('Enter your email first.');
       return;
     }
 
@@ -84,10 +88,10 @@ export default function LoginPage() {
     setMessage('');
     setLoading(true);
     try {
-      const response = await getPasswordResetQuestion(normalizedUsername);
+      const response = await getPasswordResetQuestion(normalizedEmail);
       setResetForm((prev) => ({
         ...prev,
-        username: normalizedUsername,
+        email: normalizedEmail,
         securityQuestion: response.security_question,
         securityAnswer: '',
         newPassword: '',
@@ -106,12 +110,12 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await resetPassword({
-        username: resetForm.username.trim(),
+        email: resetForm.email.trim(),
         securityAnswer: resetForm.securityAnswer.trim(),
         newPassword: resetForm.newPassword,
       });
-      setMessage('Password updated successfully. Sign in with your new password.');
-      setLoginForm({ username: resetForm.username.trim(), password: '' });
+      setMessage('Password updated successfully. Sign in.');
+      setLoginEmail(resetForm.email.trim());
       setResetForm(EMPTY_RESET);
       setView('signin');
     } catch (err) {
@@ -153,13 +157,13 @@ export default function LoginPage() {
         {view === 'signin' && (
           <form onSubmit={handleLoginSubmit} className="login-form">
             <div className="field">
-              <label htmlFor="signin-username">Username</label>
+              <label htmlFor="signin-email">Email</label>
               <input
-                id="signin-username"
-                type="text"
-                autoComplete="username"
-                value={loginForm.username}
-                onChange={(event) => setLoginForm((prev) => ({ ...prev, username: event.target.value }))}
+                id="signin-email"
+                type="email"
+                autoComplete="email"
+                value={loginEmail}
+                onChange={(event) => setLoginEmail(event.target.value)}
                 required
               />
             </div>
@@ -169,8 +173,8 @@ export default function LoginPage() {
                 id="signin-password"
                 type="password"
                 autoComplete="current-password"
-                value={loginForm.password}
-                onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
+                value={loginPassword}
+                onChange={(event) => setLoginPassword(event.target.value)}
                 required
               />
             </div>
@@ -182,6 +186,17 @@ export default function LoginPage() {
 
         {view === 'signup' && (
           <form onSubmit={handleSignupSubmit} className="login-form">
+            <div className="field">
+              <label htmlFor="signup-email">Email</label>
+              <input
+                id="signup-email"
+                type="email"
+                autoComplete="email"
+                value={signupForm.email}
+                onChange={(event) => setSignupForm((prev) => ({ ...prev, email: event.target.value }))}
+                required
+              />
+            </div>
             <div className="field">
               <label htmlFor="signup-username">Username</label>
               <input
@@ -204,6 +219,9 @@ export default function LoginPage() {
                 required
                 minLength={8}
               />
+              <p className="field-hint">
+                Must be at least 8 characters, include 1 uppercase letter and 1 number, and not include your email.
+              </p>
             </div>
             <div className="field">
               <label htmlFor="signup-phone">Phone (optional)</label>
@@ -245,16 +263,16 @@ export default function LoginPage() {
         {view === 'reset' && (
           <form onSubmit={handlePasswordResetSubmit} className="login-form">
             <div className="field">
-              <label htmlFor="reset-username">Username</label>
+              <label htmlFor="reset-email">Email</label>
               <input
-                id="reset-username"
-                type="text"
-                autoComplete="username"
-                value={resetForm.username}
+                id="reset-email"
+                type="email"
+                autoComplete="email"
+                value={resetForm.email}
                 onChange={(event) =>
                   setResetForm((prev) => ({
                     ...prev,
-                    username: event.target.value,
+                    email: event.target.value,
                     securityQuestion: '',
                     securityAnswer: '',
                     newPassword: '',

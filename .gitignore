@@ -63,3 +63,5 @@ backend/.env
 
 # Local-only documents — do not publish
 01_Alfa_Docs/
+postgres-data/
+.claude/

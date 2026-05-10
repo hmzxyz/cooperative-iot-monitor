@@ -2,10 +2,11 @@ import mqtt from 'mqtt';
 import { DEVICE_TOPIC_WILDCARD, MOCK_INTERVAL_MS, MQTT_STALE_TIMEOUT_MS, parseSensorTopic } from './config.js';
 
 const MOCK_SENSOR_PROFILES = {
-  temperature: { min: 18, max: 35, initial: 24.2 },
-  humidity: { min: 40, max: 90, initial: 63.5 },
-  weight: { min: 0, max: 50, initial: 2.5 },
-  flow: { min: 0, max: 10, initial: 1.9 },
+  temperature: { min: 18, max: 100, initial: 26.0 },
+  vibration: { min: 0, max: 10, initial: 1.2 },
+  current_amp: { min: 0, max: 25, initial: 6.5 },
+  weight_kg: { min: 0, max: 600, initial: 220 },
+  level_percent: { min: 0, max: 100, initial: 40 },
 };
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -136,14 +137,16 @@ export default class MqttManager {
 
     this.mockTick += 1;
     const temperature = this.nextTemperature();
-    const humidity = this.nextHumidity(temperature);
+    const vibration = this.nextVibration();
+    const current = this.nextCurrent(temperature, vibration);
     const weight = this.nextWeight();
-    const flow = this.nextFlow(weight);
+    const level = this.nextLevel(weight);
 
     this.publishMockValue('temperature', temperature);
-    this.publishMockValue('humidity', humidity);
-    this.publishMockValue('weight', weight);
-    this.publishMockValue('flow', flow);
+    this.publishMockValue('vibration', vibration);
+    this.publishMockValue('current_amp', current);
+    this.publishMockValue('weight_kg', weight);
+    this.publishMockValue('level_percent', level);
   }
 
   publishMockValue(sensorKey, value) {
@@ -160,16 +163,22 @@ export default class MqttManager {
     return base + loadInfluence + drift;
   }
 
-  nextHumidity(temperature) {
-    const inverseCorrelation = 68 - (temperature - 24.3) * 1.9;
-    const drift = ((Math.random() - 0.5) * 0.8);
-    return inverseCorrelation + drift;
+  nextVibration() {
+    const base = 1.2 + Math.sin(this.mockTick / 7) * 0.35;
+    const drift = (Math.random() - 0.5) * 0.22;
+    return base + drift;
+  }
+
+  nextCurrent(temperature, vibration) {
+    const load = 6.0 + Math.max(0, temperature - 30) * 0.12 + Math.max(0, vibration - 1.5) * 0.9;
+    const drift = (Math.random() - 0.5) * 0.5;
+    return load + drift;
   }
 
   nextWeight() {
     if (this.isCollecting) {
       const drop = 4.2 + Math.random() * 0.6;
-      const next = this.mockValues.weight - drop;
+      const next = this.mockValues.weight_kg - drop;
       if (next <= 0.5) {
         this.isCollecting = false;
         this.fillTarget = 38 + Math.random() * 8;
@@ -180,23 +189,15 @@ export default class MqttManager {
 
     const fill = 0.38 + Math.random() * 0.12;
     const noise = (Math.random() - 0.45) * 0.15;
-    const next = this.mockValues.weight + fill + noise;
+    const next = this.mockValues.weight_kg + fill + noise;
     if (next >= this.fillTarget) {
       this.isCollecting = true;
     }
     return next;
   }
 
-  nextFlow(weight) {
-    if (this.isCollecting) {
-      return Math.random() * 0.2;
-    }
-
-    const previousWeight = Number.isFinite(this.mockValues.weight) ? this.mockValues.weight : weight;
-    const positiveDelta = Math.max(0, weight - previousWeight);
-    const base = 1.4 + positiveDelta * 4.8;
-    const noise = (Math.random() - 0.5) * 0.25;
-    return base + noise;
+  nextLevel(weightKg) {
+    return (weightKg / 500) * 100;
   }
 
   startFallbackTimer() {

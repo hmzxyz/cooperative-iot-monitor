@@ -1,6 +1,6 @@
 # GitHub Copilot Instructions
 
-This workspace uses a polyglot IoT monitoring stack: React + Vite frontend, FastAPI + SQLAlchemy backend, MQTT/Mosquitto, and ESP32 simulator/firmware.
+This workspace uses a Dockerized IoT monitoring stack: React + Vite frontend, FastAPI + SQLAlchemy backend, MQTT/Mosquitto, Node-RED flows, and ESP32 simulator/firmware sources.
 
 ## Purpose
 
@@ -8,21 +8,21 @@ Help AI assistants work productively in this repo by pointing to the right comma
 
 ## Key entry points
 
-- `README.md` — high-level project overview and quick start.
-- `CLAUDE.md` — detailed component notes and commands for frontend/backend/simulator.
-- `designDocs/docs/CONTRIBUTING.md` — contribution expectations.
-- `backend/` — FastAPI API, auth, database, MQTT subscriber.
-- `frontend/` — React dashboard, MQTT UI, vanilla CSS.
-- `esp32-simulators/` — Node.js simulator publishing MQTT sensor streams.
-- `esp32-firmware/` — Arduino firmware sketches.
-- `designDocs/` — architecture notes, implementation history, and project reference material.
+- `README.md` - high-level project overview and quick start.
+- `CLAUDE.md` - detailed component notes and commands for frontend/backend/simulator.
+- `designDocs/docs/CONTRIBUTING.md` - contribution expectations.
+- `backend/` - FastAPI API, auth, database, MQTT routing.
+- `frontend/` - React dashboard, MQTT UI, vanilla CSS.
+- `esp32-simulators/` - Node.js simulator publishing MQTT sensor streams.
+- `esp32-firmware/` - Arduino firmware sketches.
+- `simulation/` - Node-RED workspace and flows.
 
 ## Recommended workflow
 
 1. Read `README.md` and `CLAUDE.md` before making changes.
-2. Use `run_local_stack.sh` for local end-to-end startup when available.
-3. Use backend `uv` commands in `backend/`.
-4. Use frontend `npm` commands in `frontend/`.
+2. Use `docker-compose up -d --build` for the canonical end-to-end startup.
+3. Use backend `uv` commands in `backend/` for local package work.
+4. Use frontend `npm` commands in `frontend/` for UI work.
 5. Prefer linking to docs rather than copying architecture text into new files.
 
 ## Run commands
@@ -31,11 +31,11 @@ Help AI assistants work productively in this repo by pointing to the right comma
 - Frontend: `cd frontend && npm install && npm run dev`
 - Simulator: `cd esp32-simulators && npm install && npm start`
 - Mosquitto: `mosquitto -c mosquitto.conf`
-- Full local stack: `./run_local_stack.sh`
+- Full local stack: `docker-compose up -d --build`
 
 ## Important conventions
 
-- Backend uses SQLite by default in `backend/sensors.db`; `DATABASE_URL` may be swapped for PostgreSQL.
+- Backend uses PostgreSQL in Docker; SQLite is only for local backend experiments.
 - Frontend uses vanilla CSS (no CSS framework).
 - MQTT topics are central: current active contract is `cooperative/device/{device_id}/sensor/{sensor_id}`.
 - Changes that affect runtime behavior should also update doc references in `README.md` / `CLAUDE.md`.
@@ -52,14 +52,3 @@ Help AI assistants work productively in this repo by pointing to the right comma
 - The codebase already documents architecture and commands; avoid duplicating large sections of `CLAUDE.md` or `README.md`.
 - Use `designDocs/` as the planning source when a feature request references architecture rationale.
 - If tests are added, choose the framework consistent with the area: `pytest` for backend and `vitest`/`jest` for frontend.
-
-## Example prompts
-
-- `Help me add a new sensor type to the frontend MQTT dashboard and backend ingestion pipeline.`
-- `Update the backend to persist a new JSON field from MQTT readings and expose it in `GET /api/sensors/`.`
-- `Explain the local development startup path for the simulator and MQTT broker.`
-
-## Next agent customization ideas
-
-- Create an `AGENTS.md` for specialized frontend/backend tasks with `applyTo` rules.
-- Add a `backend/.github/copilot-instructions.md` or `frontend/.github/copilot-instructions.md` if agents should be scoped per subproject.
