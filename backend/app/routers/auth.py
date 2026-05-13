@@ -94,6 +94,9 @@ async def verify_otp(body: OTPVerifyRequest, db: AsyncSession = Depends(get_db))
         await db.commit()
         await db.refresh(user)
 
+    if user.is_blocked:
+        raise HTTPException(status_code=403, detail="Account suspended — contact your administrator")
+
     token = create_access_token({"sub": user.email, "role": user.role})
     # `users.last_login` is stored without timezone; keep value naive (UTC).
     user.last_login = datetime.utcnow()
@@ -106,6 +109,8 @@ async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
     user = await _find_user_by_email(db, form.username)
     if not user or not verify_password(form.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    if user.is_blocked:
+        raise HTTPException(status_code=403, detail="Account suspended — contact your administrator")
 
     # `users.last_login` is stored without timezone; keep value naive (UTC).
     user.last_login = datetime.utcnow()

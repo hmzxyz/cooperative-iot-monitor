@@ -1,11 +1,13 @@
 #!/bin/sh
 set -e
 
-echo "==> Running Alembic migrations..."
+echo "==> [1/3] Running Alembic migrations..."
 alembic upgrade head
+echo "    Migrations OK."
 
-echo "==> Seeding database..."
+echo "==> [2/3] Seeding database..."
 python -m app.seed
+echo "    Seed OK."
 
-echo "==> Starting server..."
+echo "==> [3/3] Starting Uvicorn..."
 exec uvicorn app.main:app --host 0.0.0.0 --port 8000

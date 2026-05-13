@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from app.database import Base
 
 class User(Base):
@@ -10,6 +10,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
     role = Column(String, default="technician")
+    is_blocked = Column(Boolean, nullable=False, default=False)
     security_question = Column(String)
     security_answer_hash = Column(String)
     phone = Column(String)
@@ -23,7 +24,8 @@ class User(Base):
             "email": self.email,
             "username": self.username,
             "role": self.role,
+            "is_blocked": self.is_blocked,
             "phone": self.phone,
             "last_login": self.last_login.isoformat() if self.last_login else None,
-            "created_at": self.created_at.isoformat(),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }

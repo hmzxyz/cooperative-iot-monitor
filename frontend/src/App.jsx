@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import MqttManager from './MqttManager.js';
 import SensorCard from './components/SensorCard.jsx';
 import HistoryChart from './components/HistoryChart.jsx';
+import Navbar from './components/Navbar.jsx';
+import UserManagementPanel from './components/UserManagementPanel.jsx';
 import { DEFAULT_BROKER_URL, MQTT_TOPICS, SENSOR_CONFIGS } from './config.js';
 import { apiFetch } from './api.js';
 import { useAuth } from './context/AuthContext';
@@ -53,7 +55,8 @@ const sourceLabel = (source) => {
 };
 
 function Dashboard() {
-  const { logout, username, token } = useAuth();
+  const { logout, username, role, token } = useAuth();
+  const [userMgmtOpen, setUserMgmtOpen] = useState(false);
   const [sensorData, setSensorData] = useState(buildInitialSensors());
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   const [mockMode, setMockMode] = useState(true);
@@ -170,27 +173,20 @@ function Dashboard() {
   }, [connectionStatus, mockMode]);
 
   return (
-    <div className="app-shell">
-      <div className="dashboard-wrapper">
-        <div className="main-content">
-          <header className="hero-panel">
-        <div>
-          <p className="eyebrow">Cooperative IoT Monitor</p>
-          <h1>Realtime Sensor Dashboard</h1>
-          <p className="hero-panel__intro">
-            Live machine readings with a safe offline fallback when hardware is unavailable.
-          </p>
-        </div>
-        <div className="hero-panel__status-row">
-          <div className="hero-panel__status-group">
-            <p className="user-badge">{connectionLabel}</p>
-            <p className="user-badge">User: {username || 'unknown'}</p>
-          </div>
-          <button className="secondary-button" type="button" onClick={logout}>
-            Sign Out
-          </button>
-        </div>
-      </header>
+    <>
+      <Navbar
+        connectionLabel={connectionLabel}
+        mockMode={mockMode}
+        onOpenUserMgmt={() => setUserMgmtOpen(true)}
+      />
+
+      {role === 'admin' && userMgmtOpen && (
+        <UserManagementPanel onClose={() => setUserMgmtOpen(false)} />
+      )}
+
+      <div className="app-shell">
+        <div className="dashboard-wrapper">
+          <div className="main-content">
 
       <section className="dashboard-layout">
         <aside className="machine-section">
@@ -246,14 +242,15 @@ function Dashboard() {
         </div>
       </section>
 
-      <footer className="footer-note">
-        <p>
-          Backend hydration uses persisted readings from `iot_monitor.sensor_readings`.
-        </p>
-      </footer>
+          <footer className="footer-note">
+            <p>
+              Backend hydration uses persisted readings from <code>iot_monitor.sensor_readings</code>.
+            </p>
+          </footer>
+        </div>
+      </div>
     </div>
-    </div>
-    </div>
+    </>
   );
 }
 

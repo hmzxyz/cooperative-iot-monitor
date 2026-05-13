@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('auth_token'));
   const [email, setEmail] = useState(() => localStorage.getItem('auth_email'));
   const [username, setUsername] = useState(() => localStorage.getItem('auth_username'));
+  const [role, setRole] = useState(() => localStorage.getItem('auth_role') || 'technician');
 
   const parseApiError = useCallback(async (res, fallbackMessage) => {
     const err = await res.json().catch(() => ({}));
@@ -32,7 +33,7 @@ export function AuthProvider({ children }) {
     throw new Error(fallbackMessage);
   }, []);
 
-  const setSession = useCallback((nextToken, nextEmail, nextUsername) => {
+  const setSession = useCallback((nextToken, nextEmail, nextUsername, nextRole) => {
     localStorage.setItem('auth_token', nextToken);
     localStorage.setItem('auth_email', nextEmail);
     if (nextUsername) {
@@ -40,9 +41,12 @@ export function AuthProvider({ children }) {
     } else {
       localStorage.removeItem('auth_username');
     }
+    const resolvedRole = nextRole || 'technician';
+    localStorage.setItem('auth_role', resolvedRole);
     setToken(nextToken);
     setEmail(nextEmail);
     setUsername(nextUsername || null);
+    setRole(resolvedRole);
   }, []);
 
   const login = useCallback(async (nextEmail, password) => {
@@ -56,7 +60,7 @@ export function AuthProvider({ children }) {
       await parseApiError(res, 'Login failed');
     }
     const { access_token, user } = await res.json();
-    setSession(access_token, user.email, user.username);
+    setSession(access_token, user.email, user.username, user.role);
   }, [parseApiError, setSession]);
 
   const registerTechnician = useCallback(async ({
@@ -123,9 +127,11 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_email');
     localStorage.removeItem('auth_username');
+    localStorage.removeItem('auth_role');
     setToken(null);
     setEmail(null);
     setUsername(null);
+    setRole('technician');
   }, []);
 
   return (
@@ -134,6 +140,7 @@ export function AuthProvider({ children }) {
         token,
         email,
         username,
+        role,
         login,
         registerTechnician,
         getPasswordResetQuestion,

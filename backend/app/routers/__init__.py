@@ -1,1 +1,1 @@
-from . import auth, analyze, predict, sensors  # noqa: F401
+from . import admin, auth, analyze, predict, sensors  # noqa: F401

@@ -65,7 +65,8 @@ FastAPI routes          →  frontend api.js   →  React pages
 - `database.py` — `AsyncEngine` + `AsyncSession` factory; schema is owned by Alembic, `init_db()` is a no-op
 - `mqtt_subscriber.py` — subscribes to `cooperative/device/+/sensor/+`, parses numeric payloads, persists `SensorReading`
 - `auth.py` — bcrypt password hashing, JWT creation/validation (8 h expiry), OTP generation
-- `routers/auth.py` — OTP email login (auto-provisions user on first verify), password login, register, `/me`
+- `routers/auth.py` — OTP email login (auto-provisions user on first verify), password login, register, `/me`; blocks suspended users (403)
+- `routers/admin.py` — admin-only user management: list, create technician + send welcome email, block/unblock; protected by `_require_admin` dep (403 if not admin)
 - `routers/sensors.py` — `/devices`, `/latest`, `/` (paginated history)
 - `routers/predict.py` — rule-based anomaly scoring → `analytics` endpoint (Phase 2 will add ML)
 - `routers/analyze.py` — `POST /v1/analyze` gateway for Node-RED bundle payloads

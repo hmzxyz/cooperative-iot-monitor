@@ -20,7 +20,9 @@
       "Bash(dir *)",
       "Bash(powershell *)",
       "Bash(Get-ChildItem -Path \"D:\\\\52_Stage_PFE_2026\\\\cooperative-iot-monitor\" -Force)",
-      "Bash(Select-Object Name, Mode)"
+      "Bash(Select-Object Name, Mode)",
+      "Bash(Get-ChildItem -Path \"D:\\\\52_Stage_PFE_2026\\\\cooperative-iot-monitor\\\\frontend\\\\src\" -Recurse -File)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ],
     "additionalDirectories": [
       "D:\\54_System_Cooperative_Ouled_Salah\\cooperative-zahrat-ouled-salah-newsystem"
