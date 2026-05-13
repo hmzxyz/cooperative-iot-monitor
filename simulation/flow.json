@@ -74,10 +74,125 @@
         "sessionExpiry": ""
     },
     {
+        "id": "7d4dca594042323c",
+        "type": "ui_tab",
+        "name": "PFE Dashboard",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "cfb39411e8919134",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "f21d5302ac261798",
+        "type": "ui_group",
+        "name": "AI Analytics",
+        "tab": "7d4dca594042323c",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
         "id": "81ac9abdba94b94d",
         "type": "inject",
         "z": "3ddefefefc8e5a81",
-        "name": "Tick 1s",
+        "name": "TICK",
         "props": [
             {
                 "p": "payload"
@@ -87,14 +202,14 @@
                 "vt": "str"
             }
         ],
-        "repeat": "30",
+        "repeat": "10",
         "crontab": "",
-        "once": false,
+        "once": true,
         "onceDelay": "1",
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 130,
+        "x": 120,
         "y": 100,
         "wires": [
             [
@@ -118,7 +233,8 @@
         "y": 100,
         "wires": [
             [
-                "6d276cf6d9b36374"
+                "6d276cf6d9b36374",
+                "24e6e5d705200d35"
             ]
         ]
     },
@@ -134,8 +250,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 550,
-        "y": 100,
+        "x": 580,
+        "y": 40,
         "wires": [
             [
                 "f5811d3f4c7064ae",
@@ -153,8 +269,8 @@
         "property": "payload",
         "action": "",
         "pretty": true,
-        "x": 920,
-        "y": 240,
+        "x": 880,
+        "y": 160,
         "wires": [
             [
                 "35ea295785342387"
@@ -173,7 +289,7 @@
         "overwriteFile": "false",
         "encoding": "utf8",
         "x": 1190,
-        "y": 320,
+        "y": 160,
         "wires": [
             []
         ]
@@ -192,8 +308,8 @@
         "correl": "",
         "expiry": "",
         "broker": "50840c75a6f16792",
-        "x": 1140,
-        "y": 60,
+        "x": 940,
+        "y": 40,
         "wires": []
     },
     {
@@ -203,8 +319,8 @@
         "name": "Monitor",
         "active": true,
         "complete": "payload",
-        "x": 920,
-        "y": 160,
+        "x": 860,
+        "y": 100,
         "wires": []
     },
     {
@@ -217,8 +333,8 @@
         "split": false,
         "rowsPerMsg": 1,
         "outputs": 1,
-        "x": 830,
-        "y": 520,
+        "x": 1190,
+        "y": 240,
         "wires": [
             []
         ]
@@ -235,11 +351,101 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 620,
-        "y": 360,
+        "x": 880,
+        "y": 240,
         "wires": [
             [
                 "8a11cfaba4a74405"
+            ]
+        ]
+    },
+    {
+        "id": "4e5ad40fa7774a5f",
+        "type": "template",
+        "z": "3ddefefefc8e5a81",
+        "name": "",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<div style=\"text-align: center; border: 2px solid {{msg.payload.color}}; border-radius: 8px; padding: 10px;\">\n    <h2 style=\"color: {{msg.payload.color}};\">STATUS: {{msg.payload.status}}</h2>\n    <p style=\"font-size: 18px;\"><strong>Technician Action:</strong> {{msg.payload.recommendation}}</p>\n    <div style=\"font-size: 14px; color: gray;\">Priority: {{msg.payload.technician_action}}</div>\n</div>",
+        "output": "str",
+        "x": 1180,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8137e40539fb7cb1",
+        "type": "ui_gauge",
+        "z": "3ddefefefc8e5a81",
+        "name": "",
+        "group": "f21d5302ac261798",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "AI Anomaly Severity",
+        "label": "units",
+        "format": "{{msg.payload.score}}",
+        "min": 0,
+        "max": "5",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 1220,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "24e6e5d705200d35",
+        "type": "function",
+        "z": "3ddefefefc8e5a81",
+        "name": "Calculate",
+        "func": "// 1. Get previous values from memory\nlet lastVib = context.get('lastVib');\nlet lastCur = context.get('lastCur');\n\n// 2. If it's the first run, initialize memory\nif (lastVib === undefined) {\n    context.set('lastVib', msg.payload.vibration);\n    context.set('lastCur', msg.payload.current_amp);\n    return null; // Skip the very first message to wait for a pair\n}\n\n// 3. Calculate Deltas\nlet v_delta = msg.payload.vibration - lastVib;\nlet c_delta = msg.payload.current_amp - lastCur;\n\n// 4. Update memory for the NEXT second\ncontext.set('lastVib', msg.payload.vibration);\ncontext.set('lastCur', msg.payload.current_amp);\n\n// 5. Send to AI\nmsg.payload = {\n    \"vibration\": Number(msg.payload.vibration),\n    \"current_amp\": Number(msg.payload.current_amp),\n    \"temperature\": Number(msg.payload.temperature),\n    \"vibration_delta\": Number(v_delta.toFixed(4)),\n    \"current_delta\": Number(c_delta.toFixed(4))\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 160,
+        "wires": [
+            [
+                "930157d855cd1019"
+            ]
+        ]
+    },
+    {
+        "id": "930157d855cd1019",
+        "type": "http request",
+        "z": "3ddefefefc8e5a81",
+        "name": "",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.100.48:8001/predict",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 870,
+        "y": 320,
+        "wires": [
+            [
+                "8137e40539fb7cb1",
+                "4e5ad40fa7774a5f"
             ]
         ]
     }
