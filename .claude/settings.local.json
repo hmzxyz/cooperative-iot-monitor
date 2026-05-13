@@ -1,10 +1,27 @@
 {
   "permissions": {
     "allow": [
-      "Bash(uv sync *)",
       "Bash(python:*)",
-      "Bash(pip install:*)",
-      "Bash(.venv/bin/activate)"
+      "Bash(netstat -ano)",
+      "Bash(pip show *)",
+      "PowerShell(Get-Process *)",
+      "Bash(\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" --background animal_food_factory_model.blend --python scripts/s02_01_compact_building.py)",
+      "Bash(\"C:/Program Files/Blender Foundation/Blender 4.2/blender.exe\" --background animal_food_factory_model.blend --python scripts/s02_run_and_save.py)",
+      "Bash(grep -v \"^$\")",
+      "Bash(pip install *)",
+      "Bash(Get-ChildItem -Recurse \"D:\\\\54_System_Cooperative_Ouled_Salah\\\\cooperative-zahrat-ouled-salah-newsystem\\\\erp_desktop\")",
+      "Bash(Select-Object FullName)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(curl -s http://localhost:8700/health)",
+      "Bash(echo \"PID: $!\")",
+      "Bash('C:/Program Files/Blender Foundation/Blender 4.2/blender.exe' --background D:/54_System_Cooperative_Ouled_Salah/cooperative-zahrat-ouled-salah-newsystem/designDocs/02_3D_Model_Design_EMS/blender_factory_model/animal_food_factory_model.blend --python D:/54_System_Cooperative_Ouled_Salah/cooperative-zahrat-ouled-salah-newsystem/designDocs/02_3D_Model_Design_EMS/blender_factory_model/scripts/s02_run_and_save.py)",
+      "Bash($BLENDER *)",
+      "Bash('C:/Program Files/Blender Foundation/Blender 4.2/blender.exe' --background D:/54_System_Cooperative_Ouled_Salah/cooperative-zahrat-ouled-salah-newsystem/designDocs/02_3D_Model_Design_EMS/blender_factory_model/animal_food_factory_model.blend --python D:/54_System_Cooperative_Ouled_Salah/cooperative-zahrat-ouled-salah-newsystem/designDocs/02_3D_Model_Design_EMS/blender_factory_model/scripts/probe_scene.py)",
+      "Bash(dir *)",
+      "Bash(powershell *)"
+    ],
+    "additionalDirectories": [
+      "D:\\54_System_Cooperative_Ouled_Salah\\cooperative-zahrat-ouled-salah-newsystem"
     ]
   }
 }
