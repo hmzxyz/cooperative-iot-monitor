@@ -1,16 +1,10 @@
-# Design Docs Overview
+# Archive
 
-This folder has one active layer and one archive layer:
+Legacy sprint notes, obsolete startup scripts, and old planning docs live here after cleanup.
 
-- `PFE_BOOK/`: canonical cleaned sprint material for the report.
-- `docs/archive/designDocs/`: legacy sprint folders, drafts, and obsolete notes moved out of the active path.
+## Layout
 
-## Recommended Source for Final Writing
-
-Use the files in `designDocs/PFE_BOOK/` first, then pull details or screenshots from `docs/archive/designDocs/` when needed.
-
-## Naming Convention
-
-- Use `Sprint NN: <descriptive title>` for human-facing chapter headings.
-- Keep `xx` only in scratch or draft paths when the sprint number is intentionally provisional.
-- Prefer one canonical merged file per sprint in `PFE_BOOK/`, and archive old drafts instead of keeping parallel active copies.
+- `designDocs/` - archived sprint folders and historical report material.
+- `notes/` - loose root notes such as `pfe.md`, `sim.md`, and `update.md`.
+- `scripts/` - old host-based startup wrappers that are no longer part of the canonical Docker flow.
+- `media/` - archived animation assets and generated files.
