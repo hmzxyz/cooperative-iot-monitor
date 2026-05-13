@@ -1,26 +1,42 @@
-from sqlalchemy import Column, Integer, String, DateTime, JSON
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime, timezone
+from __future__ import annotations
 
-Base = declarative_base()
+from datetime import datetime
+from typing import Any
+
+from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy.dialects.postgresql import JSONB
+
+from app.database import Base
+
 
 class SensorReading(Base):
-    __tablename__ = 'sensor_readings'
+    __tablename__ = "sensor_readings"
 
-    id        = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    # Node-RED simulator writes machine_id here (e.g. "Hopper_01").
     device_id = Column(String, nullable=False, index=True)
+    # Node-RED simulator writes machine_type here (e.g. "Hopper").
     sensor_id = Column(String, nullable=False, index=True)
-    payload   = Column(JSON, nullable=False)
-    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    tick = Column(Integer, nullable=True, index=True)
+    status = Column(String, nullable=True, index=True)
+    anomaly_score = Column(Float, nullable=True)
+    decision_reason = Column(JSONB, nullable=True, default=list)
+    sensors = Column(JSONB, nullable=True, default=dict)
 
-    def __repr__(self):
-        return f"SensorReading(device={self.device_id}, sensor={self.sensor_id}, ts={self.timestamp})"
+    # Legacy column from early schema; keep for backwards compatibility.
+    payload = Column(JSONB, nullable=True)
+    timestamp = Column(DateTime, nullable=True)
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         return {
-            'id':        self.id,
-            'device_id': self.device_id,
-            'sensor_id': self.sensor_id,
-            'payload':   self.payload,
-            'timestamp': self.timestamp.isoformat(),
+            "id": self.id,
+            "device_id": self.device_id,
+            "sensor_id": self.sensor_id,
+            "tick": self.tick,
+            "status": self.status,
+            "anomaly_score": self.anomaly_score,
+            "decision_reason": self.decision_reason,
+            "sensors": self.sensors,
+            "payload": self.payload,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
         }

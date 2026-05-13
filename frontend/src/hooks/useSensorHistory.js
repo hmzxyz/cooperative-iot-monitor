@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../api.js';
-import { useAuth } from '../AuthContext.jsx';
+import { useAuth } from '../context/AuthContext';
 
 const POLL_INTERVAL_MS = 10_000;
 
-export function useSensorHistory(sensorId, token, limit = 40) {
+export function useSensorHistory(sensorId, token, deviceId, limit = 40) {
   const { logout } = useAuth();
   const [readings, setReadings] = useState([]);
   const [error, setError] = useState(null);
 
   const poll = useCallback(async () => {
     try {
-      const data = await apiFetch(`/sensors/?sensor_id=${sensorId}&limit=${limit}`, token);
+      const deviceQuery = deviceId ? `&device_id=${encodeURIComponent(deviceId)}` : '';
+      const data = await apiFetch(`/sensors/?sensor_id=${sensorId}&limit=${limit}${deviceQuery}`, token);
       // API returns newest-first; chart needs oldest-first
       setReadings(
         data.reverse().map((r) => ({
@@ -24,7 +25,7 @@ export function useSensorHistory(sensorId, token, limit = 40) {
       if (err.message === 'unauthorized') logout();
       setError(err.message);
     }
-  }, [sensorId, token, limit, logout]);
+  }, [sensorId, token, deviceId, limit, logout]);
 
   useEffect(() => {
     poll();

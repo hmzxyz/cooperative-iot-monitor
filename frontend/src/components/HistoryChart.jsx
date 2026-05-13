@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAuth } from '../AuthContext.jsx';
+import { useAuth } from '../context/AuthContext';
 import { useSensorHistory } from '../hooks/useSensorHistory.js';
 
 const LINE_COLOR = '#3b82f6';
@@ -27,9 +27,9 @@ function toChartPoints(readings) {
     .join(' ');
 }
 
-export default function HistoryChart({ sensorId, label, unit }) {
+export default function HistoryChart({ sensorId, label, unit, deviceId }) {
   const { token } = useAuth();
-  const { readings, error } = useSensorHistory(sensorId, token);
+  const { readings, error } = useSensorHistory(sensorId, token, deviceId);
   const points = useMemo(() => toChartPoints(readings), [readings]);
   const latest = readings.length > 0 ? readings[readings.length - 1] : null;
 
@@ -42,7 +42,7 @@ export default function HistoryChart({ sensorId, label, unit }) {
       {error && <p className="history-chart__error">Could not load history</p>}
 
       {readings.length === 0 && !error && (
-        <p className="history-chart__empty">Waiting for data…</p>
+        <p className="history-chart__empty">Waiting for data...</p>
       )}
 
       {readings.length > 0 && (

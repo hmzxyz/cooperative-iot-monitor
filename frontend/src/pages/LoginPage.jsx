@@ -1,20 +1,50 @@
-import { useState } from 'react';
-import { useAuth } from '../AuthContext.jsx';
+import { useMemo, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+
+const EMPTY_SIGNUP = {
+  email: '',
+  username: '',
+  password: '',
+  phone: '',
+  securityQuestion: '',
+  securityAnswer: '',
+};
+
+const EMPTY_RESET = {
+  email: '',
+  securityQuestion: '',
+  securityAnswer: '',
+  newPassword: '',
+};
 
 export default function LoginPage() {
-  const { login, loginAsTestAdmin, testAdmin } = useAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const { login, registerTechnician, getPasswordResetQuestion, resetPassword } = useAuth();
+  const [view, setView] = useState('signin');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [signupForm, setSignupForm] = useState(EMPTY_SIGNUP);
+  const [resetForm, setResetForm] = useState(EMPTY_RESET);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [adminLoading, setAdminLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const setCurrentView = (nextView) => {
+    setView(nextView);
     setError('');
+    setMessage('');
+    if (nextView !== 'reset') {
+      setResetForm(EMPTY_RESET);
+    }
+  };
+
+  const handleLoginSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setMessage('');
     setLoading(true);
     try {
-      await login(username, password);
+      await login(loginEmail.trim(), loginPassword);
+      setMessage('Logged in successfully');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -22,65 +52,312 @@ export default function LoginPage() {
     }
   };
 
-  const handleAdminLogin = async () => {
+  const handleSignupSubmit = async (event) => {
+    event.preventDefault();
     setError('');
-    setAdminLoading(true);
+    setMessage('');
+    setLoading(true);
     try {
-      await loginAsTestAdmin();
+      await registerTechnician({
+        email: signupForm.email.trim(),
+        username: signupForm.username.trim(),
+        password: signupForm.password,
+        phone: signupForm.phone.trim(),
+        securityQuestion: signupForm.securityQuestion.trim(),
+        securityAnswer: signupForm.securityAnswer.trim(),
+      });
+      setMessage('Technician account created. Sign in now.');
+      setLoginEmail(signupForm.email.trim());
+      setSignupForm(EMPTY_SIGNUP);
+      setView('signin');
     } catch (err) {
       setError(err.message);
     } finally {
-      setAdminLoading(false);
+      setLoading(false);
     }
   };
 
-  const isBusy = loading || adminLoading;
+  const handleLoadSecurityQuestion = async () => {
+    const normalizedEmail = resetForm.email.trim();
+    if (!normalizedEmail) {
+      setError('Enter your email first.');
+      return;
+    }
+
+    setError('');
+    setMessage('');
+    setLoading(true);
+    try {
+      const response = await getPasswordResetQuestion(normalizedEmail);
+      setResetForm((prev) => ({
+        ...prev,
+        email: normalizedEmail,
+        securityQuestion: response.security_question,
+        securityAnswer: '',
+        newPassword: '',
+      }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordResetSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setMessage('');
+    setLoading(true);
+    try {
+      await resetPassword({
+        email: resetForm.email.trim(),
+        securityAnswer: resetForm.securityAnswer.trim(),
+        newPassword: resetForm.newPassword,
+      });
+      setMessage('Password updated successfully. Sign in.');
+      setLoginEmail(resetForm.email.trim());
+      setResetForm(EMPTY_RESET);
+      setView('signin');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const viewText = useMemo(() => {
+    if (view === 'signup') {
+      return {
+        title: 'Technician Sign Up',
+        intro: 'Create your factory technician account and set recovery details.',
+      };
+    }
+    if (view === 'reset') {
+      return {
+        title: 'Password Recovery',
+        intro: 'Load your security question, then set a new password.',
+      };
+    }
+    return {
+      title: 'Technician Sign In',
+      intro: 'Use your technician account to access the MES dashboard.',
+    };
+  }, [view]);
 
   return (
     <div className="login-shell">
       <div className="login-card">
         <p className="eyebrow">Cooperative IoT Monitor</p>
-        <h1>Sign In</h1>
-        <p className="login-card__intro">Use your account or spin up a test admin in one click.</p>
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="field">
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              type="text"
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="login-error">{error}</p>}
-          <button className="primary-button" type="submit" disabled={isBusy}>
-            {loading ? 'Signing in…' : 'Sign In'}
+        <h1>{viewText.title}</h1>
+        <p className="login-card__intro">{viewText.intro}</p>
+
+        {error && <p className="login-error">{error}</p>}
+        {message && <p className="login-success">{message}</p>}
+
+        {view === 'signin' && (
+          <form onSubmit={handleLoginSubmit} className="login-form">
+            <div className="field">
+              <label htmlFor="signin-email">Email</label>
+              <input
+                id="signin-email"
+                type="email"
+                autoComplete="email"
+                value={loginEmail}
+                onChange={(event) => setLoginEmail(event.target.value)}
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="signin-password">Password</label>
+              <input
+                id="signin-password"
+                type="password"
+                autoComplete="current-password"
+                value={loginPassword}
+                onChange={(event) => setLoginPassword(event.target.value)}
+                required
+              />
+            </div>
+            <button className="primary-button" type="submit" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        )}
+
+        {view === 'signup' && (
+          <form onSubmit={handleSignupSubmit} className="login-form">
+            <div className="field">
+              <label htmlFor="signup-email">Email</label>
+              <input
+                id="signup-email"
+                type="email"
+                autoComplete="email"
+                value={signupForm.email}
+                onChange={(event) => setSignupForm((prev) => ({ ...prev, email: event.target.value }))}
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="signup-username">Username</label>
+              <input
+                id="signup-username"
+                type="text"
+                autoComplete="username"
+                value={signupForm.username}
+                onChange={(event) => setSignupForm((prev) => ({ ...prev, username: event.target.value }))}
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="signup-password">Password</label>
+              <input
+                id="signup-password"
+                type="password"
+                autoComplete="new-password"
+                value={signupForm.password}
+                onChange={(event) => setSignupForm((prev) => ({ ...prev, password: event.target.value }))}
+                required
+                minLength={8}
+              />
+              <p className="field-hint">
+                Must be at least 8 characters, include 1 uppercase letter and 1 number, and not include your email.
+              </p>
+            </div>
+            <div className="field">
+              <label htmlFor="signup-phone">Phone (optional)</label>
+              <input
+                id="signup-phone"
+                type="tel"
+                autoComplete="tel"
+                value={signupForm.phone}
+                onChange={(event) => setSignupForm((prev) => ({ ...prev, phone: event.target.value }))}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="signup-question">Security question</label>
+              <input
+                id="signup-question"
+                type="text"
+                value={signupForm.securityQuestion}
+                onChange={(event) => setSignupForm((prev) => ({ ...prev, securityQuestion: event.target.value }))}
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="signup-answer">Security answer</label>
+              <input
+                id="signup-answer"
+                type="password"
+                autoComplete="new-password"
+                value={signupForm.securityAnswer}
+                onChange={(event) => setSignupForm((prev) => ({ ...prev, securityAnswer: event.target.value }))}
+                required
+              />
+            </div>
+            <button className="primary-button" type="submit" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create Technician Account'}
+            </button>
+          </form>
+        )}
+
+        {view === 'reset' && (
+          <form onSubmit={handlePasswordResetSubmit} className="login-form">
+            <div className="field">
+              <label htmlFor="reset-email">Email</label>
+              <input
+                id="reset-email"
+                type="email"
+                autoComplete="email"
+                value={resetForm.email}
+                onChange={(event) =>
+                  setResetForm((prev) => ({
+                    ...prev,
+                    email: event.target.value,
+                    securityQuestion: '',
+                    securityAnswer: '',
+                    newPassword: '',
+                  }))
+                }
+                required
+              />
+            </div>
+            <button
+              className="secondary-button login-admin-button"
+              type="button"
+              onClick={handleLoadSecurityQuestion}
+              disabled={loading}
+            >
+              {loading ? 'Loading question...' : 'Load Security Question'}
+            </button>
+
+            {resetForm.securityQuestion && (
+              <>
+                <div className="field">
+                  <label htmlFor="reset-question">Your security question</label>
+                  <input
+                    id="reset-question"
+                    type="text"
+                    value={resetForm.securityQuestion}
+                    readOnly
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="reset-answer">Security answer</label>
+                  <input
+                    id="reset-answer"
+                    type="password"
+                    value={resetForm.securityAnswer}
+                    onChange={(event) =>
+                      setResetForm((prev) => ({ ...prev, securityAnswer: event.target.value }))
+                    }
+                    required
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="reset-new-password">New password</label>
+                  <input
+                    id="reset-new-password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={resetForm.newPassword}
+                    onChange={(event) =>
+                      setResetForm((prev) => ({ ...prev, newPassword: event.target.value }))
+                    }
+                    minLength={8}
+                    required
+                  />
+                </div>
+                <button className="primary-button" type="submit" disabled={loading}>
+                  {loading ? 'Updating password...' : 'Reset Password'}
+                </button>
+              </>
+            )}
+          </form>
+        )}
+
+        <div className="login-links">
+          <button
+            className={`login-link-button ${view === 'signin' ? 'active' : ''}`}
+            type="button"
+            onClick={() => setCurrentView('signin')}
+          >
+            Sign In
           </button>
           <button
-            className="secondary-button login-admin-button"
+            className={`login-link-button ${view === 'signup' ? 'active' : ''}`}
             type="button"
-            onClick={handleAdminLogin}
-            disabled={isBusy}
+            onClick={() => setCurrentView('signup')}
           >
-            {adminLoading ? 'Preparing admin…' : 'Use Admin Test User'}
+            Sign Up
           </button>
-          <p className="login-helper">
-            Test credentials: <span>{testAdmin.username}</span> / <span>{testAdmin.password}</span>
-          </p>
-        </form>
+          <button
+            className={`login-link-button ${view === 'reset' ? 'active' : ''}`}
+            type="button"
+            onClick={() => setCurrentView('reset')}
+          >
+            Forgot Password
+          </button>
+        </div>
       </div>
     </div>
   );

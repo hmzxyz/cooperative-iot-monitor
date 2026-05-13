@@ -5,7 +5,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 
@@ -31,23 +32,40 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    from app.models.user import User
-
-    credentials_exc = HTTPException(
+def _credentials_exc() -> HTTPException:
+    return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or expired token",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+
+def _decode_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if not username:
-            raise credentials_exc
     except JWTError:
-        raise credentials_exc
+        raise _credentials_exc()
+    if not payload.get("sub"):
+        raise _credentials_exc()
+    return payload
 
-    user = db.query(User).filter(User.username == username).first()
+
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+    from app.models.user import User
+
+    payload = _decode_token(token)
+    subject: str = payload.get("sub")
+    # Tokens use `sub` as the user's email; keep a username fallback for older tokens.
+    result = await db.execute(
+        select(User).where((User.email == subject) | (User.username == subject))
+    )
+    user = result.scalar_one_or_none()
     if not user:
-        raise credentials_exc
+        raise _credentials_exc()
     return user
+
+
+async def get_current_user_ws(token: str | None):
+    if not token:
+        raise _credentials_exc()
+    return _decode_token(token)

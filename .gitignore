@@ -40,6 +40,12 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
+.venv*/
+
+# Local databases and backup files
+*.db
+*.backup
 
 # Node / frontend
 node_modules/
@@ -54,3 +60,8 @@ guide.md
 .env
 frontend/.env
 backend/.env
+
+# Local-only documents — do not publish
+01_Alfa_Docs/
+postgres-data/
+.claude/simulation/flow_cred.json

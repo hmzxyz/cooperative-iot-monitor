@@ -1,76 +1,85 @@
 services:
-
   # ── MQTT broker ────────────────────────────────────────────────────────────
   mosquitto:
     image: eclipse-mosquitto:2
+    container_name: mosquitto-1
     ports:
-      - "1883:1883"   # TCP — backend + simulator
-      - "9001:9001"   # WebSocket — browser MQTT.js client
+      - "1883:1883"
+      - "9001:9001"
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
     restart: unless-stopped
 
   # ── PostgreSQL ─────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
+    container_name: postgres-1
     environment:
-      POSTGRES_DB:       ${POSTGRES_DB:-iot_monitor}
-      POSTGRES_USER:     ${POSTGRES_USER:-iot_user}
+      POSTGRES_DB: ${POSTGRES_DB:-iot_monitor}
+      POSTGRES_USER: ${POSTGRES_USER:-iot_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-iotpassword}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data # Changed to bind mount for safety
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-iot_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-iot_user} -d ${POSTGRES_DB:-iot_monitor}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
+  # ── Node-RED (Simulation Engine) ───────────────────────────────────────────
+  nodered:
+    image: nodered/node-red:latest
+    container_name: nodered-1
+    user: "1000:1000" # Match your Manjaro user ID to avoid permission issues
+    environment:
+      - TZ=Africa/Tunis
+      - FLOWS=flow.json # Force Node-RED to use your specific filename
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./simulation:/data # Directly maps your local folder to Node-RED data
+    depends_on:
+      - mosquitto
+      - postgres
     restart: unless-stopped
 
   # ── FastAPI backend ────────────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
+    container_name: backend-1
     ports:
       - "8000:8000"
     depends_on:
-      mosquitto:
-        condition: service_started
       postgres:
         condition: service_healthy
+      mosquitto:
+        condition: service_started
     environment:
-      DATABASE_URL:     postgresql://${POSTGRES_USER:-iot_user}:${POSTGRES_PASSWORD:-iotpassword}@postgres:5432/${POSTGRES_DB:-iot_monitor}
+      # App runtime uses SQLAlchemy asyncio, so require an async driver.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-iot_user}:${POSTGRES_PASSWORD:-iotpassword}@postgres:5432/${POSTGRES_DB:-iot_monitor}
       MQTT_BROKER_HOST: mosquitto
       MQTT_BROKER_PORT: 1883
-      JWT_SECRET_KEY:   ${JWT_SECRET_KEY:-dev-secret-change-in-production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-in-production}
     restart: unless-stopped
 
-  # ── React frontend (Vite build → Nginx) ────────────────────────────────────
+  # ── React frontend ─────────────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
       args:
-        # /api is resolved by Nginx proxy_pass to http://backend:8000
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
-        # Browser connects directly to mosquitto WebSocket (port 9001 exposed on host)
         VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:9001}
+    container_name: frontend-1
     ports:
       - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
 
-  # ── ESP32 simulator (optional — comment out to use real hardware) ──────────
-  simulator:
-    build:
-      context: ./esp32-simulators
-    depends_on:
-      - mosquitto
-    environment:
-      MQTT_BROKER_URL:    mqtt://mosquitto:1883
-      PUBLISH_INTERVAL_MS: ${PUBLISH_INTERVAL_MS:-2000}
-    restart: unless-stopped
-
-volumes:
-  postgres_data:
+# Removed anonymous volumes for cleaner refactor

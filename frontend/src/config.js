@@ -1,15 +1,15 @@
 export const DEFAULT_BROKER_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:9001';
-export const FALLBACK_BROKER_URL = 'wss://test.mosquitto.org:8081';
 
-// Wildcard subscription — matches cooperative/device/{deviceId}/sensor/{type}
+// Wildcard subscription for cooperative/device/{deviceId}/sensor/{type}.
 export const DEVICE_TOPIC_WILDCARD = 'cooperative/device/+/sensor/+';
 
 // Known sensor types (used for validation and mock data keys)
 export const MQTT_TOPICS = {
   temperature: 'cooperative/device/+/sensor/temperature',
-  humidity:    'cooperative/device/+/sensor/humidity',
-  weight:      'cooperative/device/+/sensor/weight',
-  flow:        'cooperative/device/+/sensor/flow',
+  vibration: 'cooperative/device/+/sensor/vibration',
+  current_amp: 'cooperative/device/+/sensor/current_amp',
+  weight_kg: 'cooperative/device/+/sensor/weight_kg',
+  level_percent: 'cooperative/device/+/sensor/level_percent',
 };
 
 /**
@@ -26,11 +26,12 @@ export function parseSensorTopic(topic) {
   return { deviceId: parts[2], sensorKey };
 }
 
-export const MOCK_INTERVAL_MS = 2000;
-export const MQTT_STALE_TIMEOUT_MS = 5000;
+export const MOCK_INTERVAL_MS = 4000;
+export const MQTT_STALE_TIMEOUT_MS = 12000;
 export const SENSOR_CONFIGS = {
-  temperature: { label: 'Temperature', unit: '°C' },
-  humidity:    { label: 'Humidity', unit: '%' },
-  weight:      { label: 'Weight', unit: 'kg' },
-  flow:        { label: 'Flow', unit: 'L/min' },
+  temperature: { label: 'Temperature', unit: 'C' },
+  vibration: { label: 'Vibration', unit: 'g' },
+  current_amp: { label: 'Current', unit: 'A' },
+  weight_kg: { label: 'Weight', unit: 'kg' },
+  level_percent: { label: 'Level', unit: '%' },
 };

@@ -1,7 +1,22 @@
 import mqtt from 'mqtt';
 import { DEVICE_TOPIC_WILDCARD, MOCK_INTERVAL_MS, MQTT_STALE_TIMEOUT_MS, parseSensorTopic } from './config.js';
 
-const randomBetween = (min, max) => Number((Math.random() * (max - min) + min).toFixed(1));
+const MOCK_SENSOR_PROFILES = {
+  temperature: { min: 18, max: 100, initial: 26.0 },
+  vibration: { min: 0, max: 10, initial: 1.2 },
+  current_amp: { min: 0, max: 25, initial: 6.5 },
+  weight_kg: { min: 0, max: 600, initial: 220 },
+  level_percent: { min: 0, max: 100, initial: 40 },
+};
+
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+const randomInitial = ({ min, max, initial }) => {
+  if (Number.isFinite(initial)) {
+    return Number(initial.toFixed(1));
+  }
+  return Number((Math.random() * (max - min) + min).toFixed(1));
+};
 
 export default class MqttManager {
   constructor({ brokerUrl, onStatusChange, onData, onMockModeChange }) {
@@ -16,6 +31,15 @@ export default class MqttManager {
     this.forceMock = false;
     this.mockActive = true;
     this.connected = false;
+    this.mockTick = 0;
+    this.fillTarget = 40.5;
+    this.isCollecting = false;
+    this.mockValues = Object.fromEntries(
+      Object.entries(MOCK_SENSOR_PROFILES).map(([sensorKey, profile]) => [
+        sensorKey,
+        randomInitial(profile),
+      ])
+    );
   }
 
   connect() {
@@ -89,6 +113,7 @@ export default class MqttManager {
     this.lastMessageAt = Date.now();
     this.mockActive = false;
     this.onMockModeChange(false);
+    this.mockValues[sensorKey] = Number(value.toFixed(1));
     this.onData(sensorKey, value, false);
   }
 
@@ -110,16 +135,69 @@ export default class MqttManager {
       this.onMockModeChange(true);
     }
 
-    const values = {
-      temperature: randomBetween(18, 35),
-      humidity: randomBetween(30, 80),
-      weight: randomBetween(0, 500),
-      flow: randomBetween(0, 100),
-    };
+    this.mockTick += 1;
+    const temperature = this.nextTemperature();
+    const vibration = this.nextVibration();
+    const current = this.nextCurrent(temperature, vibration);
+    const weight = this.nextWeight();
+    const level = this.nextLevel(weight);
 
-    Object.entries(values).forEach(([key, value]) => {
-      this.onData(key, value, true);
-    });
+    this.publishMockValue('temperature', temperature);
+    this.publishMockValue('vibration', vibration);
+    this.publishMockValue('current_amp', current);
+    this.publishMockValue('weight_kg', weight);
+    this.publishMockValue('level_percent', level);
+  }
+
+  publishMockValue(sensorKey, value) {
+    const profile = MOCK_SENSOR_PROFILES[sensorKey];
+    const nextValue = Number(clamp(value, profile.min, profile.max).toFixed(1));
+    this.mockValues[sensorKey] = nextValue;
+    this.onData(sensorKey, nextValue, true);
+  }
+
+  nextTemperature() {
+    const base = 24.3 + Math.sin(this.mockTick / 8) * 1.2;
+    const loadInfluence = this.isCollecting ? 0.8 : -0.15;
+    const drift = ((Math.random() - 0.5) * 0.3);
+    return base + loadInfluence + drift;
+  }
+
+  nextVibration() {
+    const base = 1.2 + Math.sin(this.mockTick / 7) * 0.35;
+    const drift = (Math.random() - 0.5) * 0.22;
+    return base + drift;
+  }
+
+  nextCurrent(temperature, vibration) {
+    const load = 6.0 + Math.max(0, temperature - 30) * 0.12 + Math.max(0, vibration - 1.5) * 0.9;
+    const drift = (Math.random() - 0.5) * 0.5;
+    return load + drift;
+  }
+
+  nextWeight() {
+    if (this.isCollecting) {
+      const drop = 4.2 + Math.random() * 0.6;
+      const next = this.mockValues.weight_kg - drop;
+      if (next <= 0.5) {
+        this.isCollecting = false;
+        this.fillTarget = 38 + Math.random() * 8;
+        return 0.4 + Math.random() * 0.2;
+      }
+      return next;
+    }
+
+    const fill = 0.38 + Math.random() * 0.12;
+    const noise = (Math.random() - 0.45) * 0.15;
+    const next = this.mockValues.weight_kg + fill + noise;
+    if (next >= this.fillTarget) {
+      this.isCollecting = true;
+    }
+    return next;
+  }
+
+  nextLevel(weightKg) {
+    return (weightKg / 500) * 100;
   }
 
   startFallbackTimer() {
