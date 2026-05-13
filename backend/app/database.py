@@ -32,9 +32,5 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
-    # Prefer Alembic in production; this is only for local dev convenience.
-    from app.models.sensor_reading import SensorReading  # noqa: F401
-    from app.models.user import User  # noqa: F401
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Schema is managed exclusively by Alembic (runs in entrypoint.sh before the server starts).
+    pass

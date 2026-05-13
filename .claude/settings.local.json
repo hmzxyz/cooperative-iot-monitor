@@ -18,7 +18,9 @@
       "Bash($BLENDER *)",
       "Bash('C:/Program Files/Blender Foundation/Blender 4.2/blender.exe' --background D:/54_System_Cooperative_Ouled_Salah/cooperative-zahrat-ouled-salah-newsystem/designDocs/02_3D_Model_Design_EMS/blender_factory_model/animal_food_factory_model.blend --python D:/54_System_Cooperative_Ouled_Salah/cooperative-zahrat-ouled-salah-newsystem/designDocs/02_3D_Model_Design_EMS/blender_factory_model/scripts/probe_scene.py)",
       "Bash(dir *)",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "Bash(Get-ChildItem -Path \"D:\\\\52_Stage_PFE_2026\\\\cooperative-iot-monitor\" -Force)",
+      "Bash(Select-Object Name, Mode)"
     ],
     "additionalDirectories": [
       "D:\\54_System_Cooperative_Ouled_Salah\\cooperative-zahrat-ouled-salah-newsystem"

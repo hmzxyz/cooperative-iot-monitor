@@ -8,8 +8,8 @@ services:
       - "9001:9001"
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - ./mosquitto/data:/mosquitto/data
-      - ./mosquitto/log:/mosquitto/log
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
     restart: unless-stopped
 
   # ── PostgreSQL ─────────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-iot_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-iotpassword}
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data # Changed to bind mount for safety
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -35,14 +35,13 @@ services:
   nodered:
     image: nodered/node-red:latest
     container_name: nodered-1
-    user: "1000:1000" # Match your Manjaro user ID to avoid permission issues
     environment:
-      - TZ=Africa/Tunis
-      - FLOWS=flow.json # Force Node-RED to use your specific filename
+      - TZ=${TZ:-Africa/Tunis}
+      - FLOWS=flow.json
     ports:
       - "1880:1880"
     volumes:
-      - ./simulation:/data # Directly maps your local folder to Node-RED data
+      - ./simulation:/data
     depends_on:
       - mosquitto
       - postgres
@@ -61,25 +60,51 @@ services:
       mosquitto:
         condition: service_started
     environment:
-      # App runtime uses SQLAlchemy asyncio, so require an async driver.
+      # Database — async driver for the app; Alembic env.py converts it to psycopg2
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-iot_user}:${POSTGRES_PASSWORD:-iotpassword}@postgres:5432/${POSTGRES_DB:-iot_monitor}
+      # MQTT
       MQTT_BROKER_HOST: mosquitto
-      MQTT_BROKER_PORT: 1883
+      MQTT_BROKER_PORT: ${MQTT_BROKER_PORT:-1883}
+      # Auth
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-in-production}
+      # Superuser seed (entrypoint creates this user on first deploy)
+      SEED_SUPERUSER_EMAIL: ${SEED_SUPERUSER_EMAIL:-admin@coop.local}
+      SEED_SUPERUSER_USERNAME: ${SEED_SUPERUSER_USERNAME:-admin}
+      SEED_SUPERUSER_PASSWORD: ${SEED_SUPERUSER_PASSWORD:-Admin1234!}
+      # SMTP (email OTP)
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_TLS: ${SMTP_TLS:-false}
+      SMTP_SENDER_NAME: ${SMTP_SENDER_NAME:-CoopIoT Monitor}
+      SMTP_SENDER_ADDR: ${SMTP_SENDER_ADDR:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
 
-  # ── React frontend ─────────────────────────────────────────────────────────
+  # ── React frontend (Nginx) ─────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
       args:
+        # /api is reverse-proxied by Nginx to http://backend:8000
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+        # Browser connects directly to Mosquitto WebSocket — must be reachable from the client
         VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:9001}
     container_name: frontend-1
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
-# Removed anonymous volumes for cleaner refactor
+volumes:
+  postgres_data:
+  mosquitto_data:
+  mosquitto_log:
