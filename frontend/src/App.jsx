@@ -166,7 +166,6 @@ function Dashboard() {
   }, [token, mockMode, connectionStatus, logout, applySensorUpdate, selectedDevice]);
 
   const connectionLabel = useMemo(() => {
-    if (mockMode) return 'Offline simulation';
     if (connectionStatus === 'Connected') return 'Live MQTT connected';
     if (connectionStatus === 'Connecting' || connectionStatus === 'Reconnecting') return 'Connecting';
     return 'Disconnected';
