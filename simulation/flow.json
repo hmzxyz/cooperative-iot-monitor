@@ -1,17 +1,17 @@
 [
     {
-        "id": "500d924d0823096e",
-        "type": "tab",
-        "label": "Flow 1",
-        "disabled": false,
-        "info": "",
-        "env": []
-    },
-    {
         "id": "3ddefefefc8e5a81",
         "type": "tab",
         "label": "Master Simulation",
         "disabled": false
+    },
+    {
+        "id": "b57a248562f11f8b",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-postgresql": "0.15.4"
+        }
     },
     {
         "id": "1d9bb3f36fb36d3b",
@@ -37,14 +37,6 @@
         "userFieldType": "str",
         "password": "iotpassword",
         "passwordFieldType": "str"
-    },
-    {
-        "id": "b57a248562f11f8b",
-        "type": "global-config",
-        "env": [],
-        "modules": {
-            "node-red-contrib-postgresql": "0.15.4"
-        }
     },
     {
         "id": "50840c75a6f16792",
@@ -250,14 +242,14 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 580,
-        "y": 40,
+        "x": 500,
+        "y": 60,
         "wires": [
             [
-                "f5811d3f4c7064ae",
                 "f8b8018f83290dd2",
                 "27d040f3b9835124",
-                "a20dcfb5d4cd295c"
+                "a20dcfb5d4cd295c",
+                "3c6412fa43f94400"
             ]
         ]
     },
@@ -269,7 +261,7 @@
         "property": "payload",
         "action": "",
         "pretty": true,
-        "x": 880,
+        "x": 900,
         "y": 160,
         "wires": [
             [
@@ -288,7 +280,7 @@
         "createDir": true,
         "overwriteFile": "false",
         "encoding": "utf8",
-        "x": 1190,
+        "x": 1170,
         "y": 160,
         "wires": [
             []
@@ -308,8 +300,8 @@
         "correl": "",
         "expiry": "",
         "broker": "50840c75a6f16792",
-        "x": 940,
-        "y": 40,
+        "x": 1040,
+        "y": 20,
         "wires": []
     },
     {
@@ -320,7 +312,7 @@
         "active": true,
         "complete": "payload",
         "x": 860,
-        "y": 100,
+        "y": 80,
         "wires": []
     },
     {
@@ -344,7 +336,7 @@
         "type": "function",
         "z": "3ddefefefc8e5a81",
         "name": "FORMAT SQL",
-        "func": "/**\n * FORMAT SQL NODE\n * Purpose: Map flat simulation data to specific PostgreSQL columns.\n */\nconst d = msg.payload;\n\nmsg.query = `\n    INSERT INTO sensor_readings (\n        device_id, \n        sensor_id, \n        tick, \n        status, \n        anomaly_score, \n        decision_reason, \n        sensors, \n        timestamp\n    ) \n    VALUES ($1, $2, $3, $4, $5, $6, $7, $8);\n`;\n\nmsg.params = [\n    d.machine_id,\n    d.machine_type,\n    d.tick,\n    d.status,\n    d.anomaly_score,\n    JSON.stringify(d.decision_reason), // Store reasons as JSONB array\n    JSON.stringify(d.sensors),         // Store sensor object as JSONB\n    d.timestamp\n];\n\nreturn msg;",
+        "func": "/**\n * FORMAT SQL NODE\n * Purpose: Map flat simulation data to specific PostgreSQL columns.\n * Fix: Added the missing 'payload' column to satisfy NOT NULL constraints.\n */\nconst d = msg.payload;\n\nmsg.query = `\n    INSERT INTO sensor_readings (\n        device_id, \n        sensor_id, \n        tick, \n        status, \n        anomaly_score, \n        decision_reason, \n        sensors, \n        payload, \n        timestamp\n    ) \n    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);\n`;\n\nmsg.params = [\n    d.machine_id,\n    d.machine_type,\n    d.tick,\n    d.status,\n    d.anomaly_score,\n    JSON.stringify(d.decision_reason || []), // Ensure it's not null\n    JSON.stringify(d.sensors || {}),         // Ensure it's not null\n    JSON.stringify({ source: \"gateway\" }),   // Added: The missing payload parameter\n    d.timestamp\n];\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -446,6 +438,26 @@
             [
                 "8137e40539fb7cb1",
                 "4e5ad40fa7774a5f"
+            ]
+        ]
+    },
+    {
+        "id": "3c6412fa43f94400",
+        "type": "function",
+        "z": "3ddefefefc8e5a81",
+        "name": "FORMAT MQTT",
+        "func": "// Send only the essential sensor data and status\nmsg.payload = {\n    machine_id: msg.payload.machine_id,\n    status: msg.payload.status,\n    sensors: msg.payload.sensors,\n    timestamp: new Date().toISOString()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 20,
+        "wires": [
+            [
+                "f5811d3f4c7064ae"
             ]
         ]
     }
