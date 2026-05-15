@@ -65,6 +65,7 @@ services:
       # MQTT
       MQTT_BROKER_HOST: mosquitto
       MQTT_BROKER_PORT: ${MQTT_BROKER_PORT:-1883}
+      MQTT_TOPIC: ${MQTT_TOPIC:-cooperative/device/+/telemetry}
       # Auth
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-in-production}
       # Superuser seed (entrypoint creates this user on first deploy)

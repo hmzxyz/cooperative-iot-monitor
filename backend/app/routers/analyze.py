@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.sensor_reading import SensorReading
+from app.telemetry import broadcast_readings, make_sensor_reading, persist_sensor_readings
 
 
 router = APIRouter(prefix="/v1", tags=["analyze"])
@@ -83,30 +83,21 @@ async def analyze(
     db: AsyncSession = Depends(get_db),
 ):
     # Persist one row per sensor for compatibility with the dashboard history APIs.
-    created = []
     ts = datetime.utcnow()
+    readings = []
     for sensor_key, value in (body.sensors or {}).items():
         if not isinstance(value, (int, float)):
             continue
-        reading = SensorReading(
+        reading = make_sensor_reading(
             device_id=body.device_id,
             sensor_id=str(sensor_key),
             payload={"value": float(value), "tick": body.tick, "source": "gateway"},
             timestamp=ts,
         )
-        db.add(reading)
-        created.append(reading)
+        readings.append(reading)
 
-    await db.commit()
-    for reading in created:
-        await db.refresh(reading)
-
-    payload = {
-        "type": "reading_batch",
-        "data": [reading.to_dict() for reading in created],
-    }
+    created = await persist_sensor_readings(db, readings)
     manager = getattr(request.app.state, "realtime_manager", None)
-    if manager:
-        await manager.broadcast_json(payload)
+    await broadcast_readings(manager, created)
 
     return {"ok": True, "count": len(created)}

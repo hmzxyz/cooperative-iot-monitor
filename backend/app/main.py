@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db
+from app.mqtt_subscriber import MQTTSubscriber
 from app.realtime import ConnectionManager
 from app.routers import auth, analyze, predict, sensors
 from app.routers import admin
@@ -13,13 +14,15 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Node-RED gateway posts to /v1/analyze; backend owns streaming.
+    # Backend owns MQTT ingestion, persistence, and streaming.
     app.state.realtime_manager = ConnectionManager()
     await init_db()
+    app.state.mqtt_subscriber = MQTTSubscriber(app.state.realtime_manager)
+    await app.state.mqtt_subscriber.start()
     try:
         yield
     finally:
-        pass
+        await app.state.mqtt_subscriber.stop()
 
 
 app = FastAPI(title="Cooperative IoT Monitor API", lifespan=lifespan)
