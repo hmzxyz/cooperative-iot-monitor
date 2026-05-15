@@ -63,36 +63,6 @@ export function AuthProvider({ children }) {
     setSession(access_token, user.email, user.username, user.role);
   }, [parseApiError, setSession]);
 
-  const registerTechnician = useCallback(async ({
-    email: nextEmail,
-    username,
-    password,
-    phone,
-    securityQuestion,
-    securityAnswer,
-  }) => {
-    const payload = {
-      email: nextEmail,
-      username,
-      password,
-      role: 'technician',
-      phone: phone || undefined,
-      security_question: securityQuestion,
-      security_answer: securityAnswer,
-    };
-
-    const res = await fetch(`${API_BASE}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      await parseApiError(res, 'Registration failed');
-    }
-    return res.json();
-  }, [parseApiError]);
-
   const getPasswordResetQuestion = useCallback(async (nextEmail) => {
     const emailQuery = encodeURIComponent(nextEmail);
     const res = await fetch(`${API_BASE}/auth/password-reset/question?email=${emailQuery}`);
@@ -142,7 +112,6 @@ export function AuthProvider({ children }) {
         username,
         role,
         login,
-        registerTechnician,
         getPasswordResetQuestion,
         resetPassword,
         logout,

@@ -1,15 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const EMPTY_SIGNUP = {
-  email: '',
-  username: '',
-  password: '',
-  phone: '',
-  securityQuestion: '',
-  securityAnswer: '',
-};
-
 const EMPTY_RESET = {
   email: '',
   securityQuestion: '',
@@ -18,11 +9,10 @@ const EMPTY_RESET = {
 };
 
 export default function LoginPage() {
-  const { login, registerTechnician, getPasswordResetQuestion, resetPassword } = useAuth();
+  const { login, getPasswordResetQuestion, resetPassword } = useAuth();
   const [view, setView] = useState('signin');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [signupForm, setSignupForm] = useState(EMPTY_SIGNUP);
   const [resetForm, setResetForm] = useState(EMPTY_RESET);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -45,31 +35,6 @@ export default function LoginPage() {
     try {
       await login(loginEmail.trim(), loginPassword);
       setMessage('Logged in successfully');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignupSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-    setMessage('');
-    setLoading(true);
-    try {
-      await registerTechnician({
-        email: signupForm.email.trim(),
-        username: signupForm.username.trim(),
-        password: signupForm.password,
-        phone: signupForm.phone.trim(),
-        securityQuestion: signupForm.securityQuestion.trim(),
-        securityAnswer: signupForm.securityAnswer.trim(),
-      });
-      setMessage('Technician account created. Sign in now.');
-      setLoginEmail(signupForm.email.trim());
-      setSignupForm(EMPTY_SIGNUP);
-      setView('signin');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -126,12 +91,6 @@ export default function LoginPage() {
   };
 
   const viewText = useMemo(() => {
-    if (view === 'signup') {
-      return {
-        title: 'Technician Sign Up',
-        intro: 'Create your factory technician account and set recovery details.',
-      };
-    }
     if (view === 'reset') {
       return {
         title: 'Password Recovery',
@@ -180,82 +139,6 @@ export default function LoginPage() {
             </div>
             <button className="primary-button" type="submit" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
-        )}
-
-        {view === 'signup' && (
-          <form onSubmit={handleSignupSubmit} className="login-form">
-            <div className="field">
-              <label htmlFor="signup-email">Email</label>
-              <input
-                id="signup-email"
-                type="email"
-                autoComplete="email"
-                value={signupForm.email}
-                onChange={(event) => setSignupForm((prev) => ({ ...prev, email: event.target.value }))}
-                required
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="signup-username">Username</label>
-              <input
-                id="signup-username"
-                type="text"
-                autoComplete="username"
-                value={signupForm.username}
-                onChange={(event) => setSignupForm((prev) => ({ ...prev, username: event.target.value }))}
-                required
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="signup-password">Password</label>
-              <input
-                id="signup-password"
-                type="password"
-                autoComplete="new-password"
-                value={signupForm.password}
-                onChange={(event) => setSignupForm((prev) => ({ ...prev, password: event.target.value }))}
-                required
-                minLength={8}
-              />
-              <p className="field-hint">
-                Must be at least 8 characters, include 1 uppercase letter and 1 number, and not include your email.
-              </p>
-            </div>
-            <div className="field">
-              <label htmlFor="signup-phone">Phone (optional)</label>
-              <input
-                id="signup-phone"
-                type="tel"
-                autoComplete="tel"
-                value={signupForm.phone}
-                onChange={(event) => setSignupForm((prev) => ({ ...prev, phone: event.target.value }))}
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="signup-question">Security question</label>
-              <input
-                id="signup-question"
-                type="text"
-                value={signupForm.securityQuestion}
-                onChange={(event) => setSignupForm((prev) => ({ ...prev, securityQuestion: event.target.value }))}
-                required
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="signup-answer">Security answer</label>
-              <input
-                id="signup-answer"
-                type="password"
-                autoComplete="new-password"
-                value={signupForm.securityAnswer}
-                onChange={(event) => setSignupForm((prev) => ({ ...prev, securityAnswer: event.target.value }))}
-                required
-              />
-            </div>
-            <button className="primary-button" type="submit" disabled={loading}>
-              {loading ? 'Creating account...' : 'Create Technician Account'}
             </button>
           </form>
         )}
@@ -342,13 +225,6 @@ export default function LoginPage() {
             onClick={() => setCurrentView('signin')}
           >
             Sign In
-          </button>
-          <button
-            className={`login-link-button ${view === 'signup' ? 'active' : ''}`}
-            type="button"
-            onClick={() => setCurrentView('signup')}
-          >
-            Sign Up
           </button>
           <button
             className={`login-link-button ${view === 'reset' ? 'active' : ''}`}

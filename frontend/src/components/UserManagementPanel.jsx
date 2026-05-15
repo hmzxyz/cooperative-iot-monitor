@@ -13,6 +13,12 @@ async function adminFetch(path, token, options = {}) {
   return body;
 }
 
+function roleLabel(role) {
+  if (role === 'admin') return 'Administrator';
+  if (role === 'technician') return 'Technician';
+  return role || 'User';
+}
+
 function UserRow({ user, currentUserId, onBlock, onUnblock }) {
   const isSelf = user.id === currentUserId;
   const isAdmin = user.role === 'admin';
@@ -32,7 +38,7 @@ function UserRow({ user, currentUserId, onBlock, onUnblock }) {
       </div>
       <div className="umgmt-user-meta">
         <span className={`navbar__role-badge navbar__role-badge--${user.role}`}>
-          {user.role}
+          {roleLabel(user.role)}
         </span>
         {user.is_blocked && (
           <span className="umgmt-blocked-badge">Suspended</span>

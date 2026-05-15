@@ -10,6 +10,12 @@ function getInitials(name) {
     .join('');
 }
 
+function roleLabel(role) {
+  if (role === 'admin') return 'Administrator';
+  if (role === 'technician') return 'Technician';
+  return role || 'User';
+}
+
 export default function Navbar({ connectionLabel, connectionState, onOpenUserMgmt }) {
   const { username, role, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -64,7 +70,7 @@ export default function Navbar({ connectionLabel, connectionState, onOpenUserMgm
               <div className="navbar__dropdown-profile">
                 <span className="navbar__dropdown-name">{username || 'User'}</span>
                 <span className={`navbar__role-badge navbar__role-badge--${role}`}>
-                  {role}
+                  {roleLabel(role)}
                 </span>
               </div>
 
