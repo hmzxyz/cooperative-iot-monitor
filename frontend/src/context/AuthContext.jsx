@@ -63,36 +63,6 @@ export function AuthProvider({ children }) {
     setSession(access_token, user.email, user.username, user.role);
   }, [parseApiError, setSession]);
 
-  const getPasswordResetQuestion = useCallback(async (nextEmail) => {
-    const emailQuery = encodeURIComponent(nextEmail);
-    const res = await fetch(`${API_BASE}/auth/password-reset/question?email=${emailQuery}`);
-    if (!res.ok) {
-      await parseApiError(res, 'Could not load security question');
-    }
-    return res.json();
-  }, [parseApiError]);
-
-  const resetPassword = useCallback(async ({
-    email: nextEmail,
-    securityAnswer,
-    newPassword,
-  }) => {
-    const res = await fetch(`${API_BASE}/auth/password-reset`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: nextEmail,
-        security_answer: securityAnswer,
-        new_password: newPassword,
-      }),
-    });
-
-    if (!res.ok) {
-      await parseApiError(res, 'Password reset failed');
-    }
-    return res.json();
-  }, [parseApiError]);
-
   const logout = useCallback(() => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_email');
@@ -112,8 +82,6 @@ export function AuthProvider({ children }) {
         username,
         role,
         login,
-        getPasswordResetQuestion,
-        resetPassword,
         logout,
         isAuthenticated: !!token,
       }}
