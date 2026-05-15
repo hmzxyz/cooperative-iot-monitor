@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-function SensorCard({ label, value, unit, description }) {
+function SensorCard({ label, value, unit }) {
   const previousValueRef = useRef(value);
   const [flash, setFlash] = useState(false);
 
@@ -22,7 +22,6 @@ function SensorCard({ label, value, unit, description }) {
         <span className="sensor-card__unit">{unit}</span>
       </div>
       <div className="sensor-card__value">{value}</div>
-      {description ? <div className="sensor-card__description">{description}</div> : null}
     </div>
   );
 }

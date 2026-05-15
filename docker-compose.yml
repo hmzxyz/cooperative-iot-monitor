@@ -5,7 +5,6 @@ services:
     container_name: mosquitto-1
     ports:
       - "1883:1883"
-      - "9001:9001"
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_data:/mosquitto/data
@@ -95,8 +94,6 @@ services:
       args:
         # /api is reverse-proxied by Nginx to http://backend:8000
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
-        # Browser connects directly to Mosquitto WebSocket — must be reachable from the client
-        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:9001}
     container_name: frontend-1
     ports:
       - "80:80"

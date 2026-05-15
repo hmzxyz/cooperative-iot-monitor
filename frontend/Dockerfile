@@ -7,9 +7,7 @@ COPY package*.json ./
 RUN npm ci
 
 ARG VITE_API_BASE_URL=/api
-ARG VITE_WS_URL=ws://localhost:9001
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_WS_URL=$VITE_WS_URL
 
 COPY . .
 RUN npm run build

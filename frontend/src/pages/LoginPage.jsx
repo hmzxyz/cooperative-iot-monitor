@@ -147,7 +147,7 @@ export default function LoginPage() {
   return (
     <div className="login-shell">
       <div className="login-card">
-        <p className="eyebrow">Cooperative IoT Monitor</p>
+        <p className="eyebrow">IoT Cooperative Monitor</p>
         <h1>{viewText.title}</h1>
         <p className="login-card__intro">{viewText.intro}</p>
 

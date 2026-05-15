@@ -84,10 +84,6 @@ input {
   border-color: rgba(93, 220, 255, 0.18);
 }
 
-.alerts-sidebar--fallback {
-  border-color: rgba(255, 183, 3, 0.18);
-}
-
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -1088,15 +1084,6 @@ input {
   background: #22c55e;
   box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
   animation: pulseDot 2s ease-in-out infinite;
-}
-
-.navbar__conn-badge--mock {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: rgba(245, 158, 11, 0.25);
-  color: #fde68a;
-}
-.navbar__conn-badge--mock .navbar__conn-dot {
-  background: #f59e0b;
 }
 
 .navbar__conn-badge--off {

@@ -10,7 +10,7 @@ function getInitials(name) {
     .join('');
 }
 
-export default function Navbar({ connectionLabel, mockMode, onOpenUserMgmt }) {
+export default function Navbar({ connectionLabel, connectionState, onOpenUserMgmt }) {
   const { username, role, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -27,11 +27,9 @@ export default function Navbar({ connectionLabel, mockMode, onOpenUserMgmt }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [menuOpen]);
 
-  const connectionClass = mockMode
-    ? 'navbar__conn-badge--mock'
-    : connectionLabel === 'Live MQTT connected'
-      ? 'navbar__conn-badge--live'
-      : 'navbar__conn-badge--off';
+  const connectionClass = connectionState === 'live'
+    ? 'navbar__conn-badge--live'
+    : 'navbar__conn-badge--off';
 
   return (
     <nav className="app-navbar">
@@ -39,7 +37,7 @@ export default function Navbar({ connectionLabel, mockMode, onOpenUserMgmt }) {
         {/* Brand */}
         <div className="navbar__brand">
           <span className="navbar__brand-icon" aria-hidden="true">⚡</span>
-          <span className="navbar__brand-name">CoopIoT Monitor</span>
+          <span className="navbar__brand-name">IoT Cooperative Monitor</span>
         </div>
 
         {/* Connection status */}

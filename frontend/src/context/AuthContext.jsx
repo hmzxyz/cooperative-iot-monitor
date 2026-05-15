@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
   const [username, setUsername] = useState(() => localStorage.getItem('auth_username'));
   const [role, setRole] = useState(() => localStorage.getItem('auth_role') || 'technician');
 
-  const parseApiError = useCallback(async (res, fallbackMessage) => {
+  const parseApiError = useCallback(async (res, defaultMessage) => {
     const err = await res.json().catch(() => ({}));
     const { detail } = err || {};
     if (Array.isArray(detail)) {
@@ -25,12 +25,12 @@ export function AuthProvider({ children }) {
         })
         .filter(Boolean)
         .join(' • ');
-      throw new Error(message || fallbackMessage);
+      throw new Error(message || defaultMessage);
     }
     if (typeof detail === 'string' && detail.trim()) {
       throw new Error(detail);
     }
-    throw new Error(fallbackMessage);
+    throw new Error(defaultMessage);
   }, []);
 
   const setSession = useCallback((nextToken, nextEmail, nextUsername, nextRole) => {
