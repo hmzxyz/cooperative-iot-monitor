@@ -184,7 +184,7 @@
         "id": "81ac9abdba94b94d",
         "type": "inject",
         "z": "3ddefefefc8e5a81",
-        "name": "TICK",
+        "name": "TICK 1S",
         "props": [
             {
                 "p": "payload"
@@ -201,7 +201,7 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 120,
+        "x": 100,
         "y": 100,
         "wires": [
             [
@@ -221,12 +221,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 330,
+        "x": 290,
         "y": 100,
         "wires": [
             [
-                "6d276cf6d9b36374",
-                "24e6e5d705200d35"
+                "6d276cf6d9b36374"
             ]
         ]
     },
@@ -243,47 +242,13 @@
         "finalize": "",
         "libs": [],
         "x": 500,
-        "y": 60,
+        "y": 100,
         "wires": [
             [
                 "f8b8018f83290dd2",
-                "27d040f3b9835124",
                 "a20dcfb5d4cd295c",
                 "3c6412fa43f94400"
             ]
-        ]
-    },
-    {
-        "id": "27d040f3b9835124",
-        "type": "json",
-        "z": "3ddefefefc8e5a81",
-        "name": "Format JSON",
-        "property": "payload",
-        "action": "",
-        "pretty": true,
-        "x": 900,
-        "y": 160,
-        "wires": [
-            [
-                "35ea295785342387"
-            ]
-        ]
-    },
-    {
-        "id": "35ea295785342387",
-        "type": "file",
-        "z": "3ddefefefc8e5a81",
-        "name": "Save Locally",
-        "filename": "data/simulation_data.json",
-        "filenameType": "str",
-        "appendNewline": true,
-        "createDir": true,
-        "overwriteFile": "false",
-        "encoding": "utf8",
-        "x": 1170,
-        "y": 160,
-        "wires": [
-            []
         ]
     },
     {
@@ -300,8 +265,8 @@
         "correl": "",
         "expiry": "",
         "broker": "50840c75a6f16792",
-        "x": 1040,
-        "y": 20,
+        "x": 1180,
+        "y": 40,
         "wires": []
     },
     {
@@ -311,8 +276,8 @@
         "name": "Monitor",
         "active": true,
         "complete": "payload",
-        "x": 860,
-        "y": 80,
+        "x": 800,
+        "y": 120,
         "wires": []
     },
     {
@@ -343,101 +308,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 880,
-        "y": 240,
+        "x": 820,
+        "y": 220,
         "wires": [
             [
                 "8a11cfaba4a74405"
-            ]
-        ]
-    },
-    {
-        "id": "4e5ad40fa7774a5f",
-        "type": "template",
-        "z": "3ddefefefc8e5a81",
-        "name": "",
-        "field": "payload",
-        "fieldType": "msg",
-        "format": "handlebars",
-        "syntax": "mustache",
-        "template": "<div style=\"text-align: center; border: 2px solid {{msg.payload.color}}; border-radius: 8px; padding: 10px;\">\n    <h2 style=\"color: {{msg.payload.color}};\">STATUS: {{msg.payload.status}}</h2>\n    <p style=\"font-size: 18px;\"><strong>Technician Action:</strong> {{msg.payload.recommendation}}</p>\n    <div style=\"font-size: 14px; color: gray;\">Priority: {{msg.payload.technician_action}}</div>\n</div>",
-        "output": "str",
-        "x": 1180,
-        "y": 380,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "8137e40539fb7cb1",
-        "type": "ui_gauge",
-        "z": "3ddefefefc8e5a81",
-        "name": "",
-        "group": "f21d5302ac261798",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "AI Anomaly Severity",
-        "label": "units",
-        "format": "{{msg.payload.score}}",
-        "min": 0,
-        "max": "5",
-        "colors": [
-            "#00b500",
-            "#e6e600",
-            "#ca3838"
-        ],
-        "seg1": "",
-        "seg2": "",
-        "diff": false,
-        "className": "",
-        "x": 1220,
-        "y": 320,
-        "wires": []
-    },
-    {
-        "id": "24e6e5d705200d35",
-        "type": "function",
-        "z": "3ddefefefc8e5a81",
-        "name": "Calculate",
-        "func": "// 1. Get previous values from memory\nlet lastVib = context.get('lastVib');\nlet lastCur = context.get('lastCur');\n\n// 2. If it's the first run, initialize memory\nif (lastVib === undefined) {\n    context.set('lastVib', msg.payload.vibration);\n    context.set('lastCur', msg.payload.current_amp);\n    return null; // Skip the very first message to wait for a pair\n}\n\n// 3. Calculate Deltas\nlet v_delta = msg.payload.vibration - lastVib;\nlet c_delta = msg.payload.current_amp - lastCur;\n\n// 4. Update memory for the NEXT second\ncontext.set('lastVib', msg.payload.vibration);\ncontext.set('lastCur', msg.payload.current_amp);\n\n// 5. Send to AI\nmsg.payload = {\n    \"vibration\": Number(msg.payload.vibration),\n    \"current_amp\": Number(msg.payload.current_amp),\n    \"temperature\": Number(msg.payload.temperature),\n    \"vibration_delta\": Number(v_delta.toFixed(4)),\n    \"current_delta\": Number(c_delta.toFixed(4))\n};\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 580,
-        "y": 160,
-        "wires": [
-            [
-                "930157d855cd1019"
-            ]
-        ]
-    },
-    {
-        "id": "930157d855cd1019",
-        "type": "http request",
-        "z": "3ddefefefc8e5a81",
-        "name": "",
-        "method": "POST",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "http://192.168.100.48:8001/predict",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 870,
-        "y": 320,
-        "wires": [
-            [
-                "8137e40539fb7cb1",
-                "4e5ad40fa7774a5f"
             ]
         ]
     },
@@ -453,8 +328,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 720,
-        "y": 20,
+        "x": 820,
+        "y": 40,
         "wires": [
             [
                 "f5811d3f4c7064ae"
