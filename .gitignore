@@ -47,6 +47,12 @@ __pycache__/
 *.db
 *.backup
 
+# Local runtime state
+.run/
+*.pid
+mosquitto/data/
+mosquitto/log/
+
 # Node / frontend
 node_modules/
 npm-debug.log*
@@ -65,3 +71,13 @@ backend/.env
 01_Alfa_Docs/
 postgres-data/
 .claude/simulation/flow_cred.json
+
+# Node-RED local/generated state
+simulation/.npm/
+simulation/node_modules/
+simulation/flow_cred.json
+simulation/.config*.json
+simulation/data/simulation_data.json
+
+# Local virtual environments
+iot-ai-system/venv/
