@@ -246,7 +246,6 @@
         "wires": [
             [
                 "f8b8018f83290dd2",
-                "a20dcfb5d4cd295c",
                 "3c6412fa43f94400"
             ]
         ]
@@ -256,7 +255,7 @@
         "type": "mqtt out",
         "z": "3ddefefefc8e5a81",
         "name": "",
-        "topic": "cooperative/device/simulator/status",
+        "topic": "",
         "qos": "0",
         "retain": "",
         "respTopic": "",
@@ -265,7 +264,7 @@
         "correl": "",
         "expiry": "",
         "broker": "50840c75a6f16792",
-        "x": 1180,
+        "x": 1090,
         "y": 40,
         "wires": []
     },
@@ -321,7 +320,7 @@
         "type": "function",
         "z": "3ddefefefc8e5a81",
         "name": "FORMAT MQTT",
-        "func": "// Send only the essential sensor data and status\nmsg.payload = {\n    machine_id: msg.payload.machine_id,\n    status: msg.payload.status,\n    sensors: msg.payload.sensors,\n    timestamp: new Date().toISOString()\n};\nreturn msg;",
+        "func": "// FORMAT MQTT\n// Canonical telemetry payload for FastAPI MQTT ingestion\n\nconst d = msg.payload || {};\n\nconst deviceId = d.machine_id;\nconst machine = d.machine_type;\n\nmsg.topic = `cooperative/device/${deviceId}/telemetry`;\n\nmsg.payload = {\n    device_id: deviceId,\n    machine: machine,\n    tick: d.tick,\n    timestamp: d.timestamp || new Date().toISOString(),\n    sensors: d.sensors || {},\n    status: d.status,\n    anomaly_score: d.anomaly_score,\n    decision_reason: d.decision_reason || []\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
